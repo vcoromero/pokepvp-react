@@ -299,27 +299,38 @@ When the client emits with a callback (ack), the server replies:
 | Emit | Ack payload on success | Ack payload on error |
 |------|------------------------|----------------------|
 | `join_lobby` | `{ player: Player, lobby: Lobby }` | `{ error: { code, message } }` |
-| `assign_pokemon` | `Team` + `pokemonDetails` (see below) | `{ error: { code, message } }` |
-| `ready` | `Lobby` (updated lobby) | `{ error: { code, message } }` |
+| `assign_pokemon` | `{ team: Team & { pokemonDetails }, lobby: Lobby }` — use `ack.team` and optionally `ack.lobby` | `{ error: { code, message } }` |
+| `ready` | `{ lobby: Lobby }` — use `ack.lobby` for the updated lobby | `{ error: { code, message } }` |
 | `attack` | Same shape as `turn_result` event | `{ error: { code, message } }` |
 
 ### assign_pokemon ack payload (success)
 
-Same as `Team` plus an array `pokemonDetails` for display (name, sprite, type) in lobby:
+The server returns an object with `team` and `lobby`. The `team` object has `Team` fields plus `pokemonDetails`:
 
 ```ts
 {
-  id:            string
-  lobbyId:       string
-  playerId:      string
-  pokemonIds:    number[]    // exactly 3 catalog IDs
-  pokemonDetails: Array<{
-    pokemonId: number      // catalog ID (matches one of pokemonIds)
-    name:      string     // e.g. "Venusaur"
-    sprite:    string     // URL (e.g. animated GIF from PokeAPI)
-    type:      string[]   // e.g. ["Grass", "Poison"]
-  }>
+  team: {
+    id:            string
+    lobbyId:       string
+    playerId:      string
+    pokemonIds:    number[]    // exactly 3 catalog IDs
+    pokemonDetails: Array<{
+      pokemonId: number      // catalog ID (matches one of pokemonIds)
+      name:      string     // e.g. "Venusaur"
+      sprite:    string     // URL (e.g. animated GIF from PokeAPI)
+      type:      string[]   // e.g. ["Grass", "Poison"]
+    }>
+  },
+  lobby: Lobby   // updated lobby; frontend should set store from ack.team and ack.lobby
 }
+```
+
+### ready ack payload (success)
+
+The server returns an object with a single key `lobby` (not the lobby at top level):
+
+```ts
+{ lobby: Lobby }   // frontend must use ack.lobby when updating the store
 ```
 
 ---

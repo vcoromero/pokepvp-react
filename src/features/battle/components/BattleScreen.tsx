@@ -1,3 +1,5 @@
+import { useAppStore } from '@/shared/store'
+import { ConnectionBanner } from '@/shared/ui'
 import { useBattleFlow } from '../hooks/useBattleFlow'
 import { BattleLayout } from './BattleLayout'
 import { BattleSide } from './BattleSide'
@@ -6,6 +8,8 @@ import { TurnIndicator } from './TurnIndicator'
 import { WinnerOverlay } from './WinnerOverlay'
 
 export function BattleScreen() {
+  const socketStatus = useAppStore((s) => s.socketStatus)
+  const lastError = useAppStore((s) => s.lastError)
   const {
     myActive,
     opponentActive,
@@ -30,13 +34,26 @@ export function BattleScreen() {
   const myBench = myPokemonOrder.filter((p) => p.id !== myActive?.id)
   const opponentBench = opponentPokemonOrder.filter((p) => p.id !== opponentActive?.id)
 
+  // Only show damage on the active Pokémon that actually received it; when a Pokémon
+  // is knocked out and a new one enters, the active changes so we hide the old value.
   const damageOnMySide =
-    lastTurnResult?.defender.playerId === player?.id ? damageText : null
+    lastTurnResult?.defender.playerId === player?.id &&
+    lastTurnResult?.defender.pokemonId === myActive?.pokemonId
+      ? damageText
+      : null
   const damageOnOpponentSide =
-    lastTurnResult?.defender.playerId === opponentPlayerId ? damageText : null
+    lastTurnResult?.defender.playerId === opponentPlayerId &&
+    lastTurnResult?.defender.pokemonId === opponentActive?.pokemonId
+      ? damageText
+      : null
 
   return (
     <BattleLayout>
+      <ConnectionBanner
+        socketStatus={socketStatus}
+        lastError={lastError}
+        actionError={attackError ? `Attack failed: ${attackError}` : null}
+      />
       {isSamePlayerOnBothSides && (
         <div
           className="mb-4 p-3 rounded-lg bg-amber-900/50 border border-amber-600 text-amber-200 text-sm text-center max-w-2xl mx-auto"
@@ -60,11 +77,6 @@ export function BattleScreen() {
           isFinished={isFinished}
           isWaitingForTurnOrder={isWaitingForTurnOrder}
         />
-        {attackError && (
-          <p className="text-center text-sm text-red-400" role="alert">
-            Attack failed: {attackError}
-          </p>
-        )}
 
         {/* My side (bottom) */}
         <BattleSide

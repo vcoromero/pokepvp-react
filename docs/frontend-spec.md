@@ -10,7 +10,7 @@ This document defines the architecture, stack, and implementation stages for the
 - **Stage 1.2 — Done.** `shared/api/socket.ts` (connect, disconnect, emit with ack: join_lobby, assign_pokemon, ready, attack). All server events (`lobby_status`, `battle_start`, `turn_result`, `battle_end`, `error`) update Zustand slices. Connection slice includes `lastError` for Socket errors. Auto-connect when URL is set (hook `useAutoConnect` on lobby/battle screens). Selector `selectIsMyTurn` for battle UI.
 - **Stage 1.3 — Done.** Lobby UI: nickname input, Join, lobby state (players/ready count), Get team, 3 Pokémon (sprite from CDN + id), Ready, “Waiting for opponent”; on `battle_start` redirect to `/battle`.
 - **Stage 1.4 — Done.** Battle screen: two sides (you vs opponent), active Pokémon (sprite, name, HP bar), bench list, Attack button (when `isMyTurn`), turn indicator, damage text from `turn_result`, winner overlay and Play again. Component-based: BattleScreen, BattleLayout, BattleSide, ActivePokemonCard, BenchPokemonList, AttackButton, TurnIndicator, WinnerOverlay; shared HpBar; useBattleFlow.
-- **Stage 1.5** — Pending (error/UX polish).
+- **Stage 1.5 — Done.** Socket error and disconnect handling: `ConnectionBanner` in shared UI shows `lastError`, socket status, and "Change backend URL" link when disconnected; used on lobby and battle. Buttons already have loading/disabled states (Join, Get team, Ready, Attack).
 
 ---
 
@@ -190,11 +190,11 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 - [x] On `turn_result`: update HP, show damage text, mark defeated; if `nextActivePokemon` switch displayed active.
 - [x] On `battle_end`: show winner (and optionally “Play again” that resets and goes back to lobby/config).
 
-#### Stage 1.5 — Error handling and UX
+#### Stage 1.5 — Error handling and UX ✅ Done
 
-- [ ] Show Socket `error` events (toast or banner).
-- [ ] Handle disconnect: show “Disconnected”; allow reconnecting or changing backend URL.
-- [ ] Loading/disabled states for buttons while request in flight.
+- [x] Show Socket `error` events (toast or banner): `ConnectionBanner` shows `lastError` on lobby and battle.
+- [x] Handle disconnect: show status and "Change backend URL" link to `/config` to reconnect.
+- [x] Loading/disabled states for buttons while request in flight (Join, Get team, Ready, Attack).
 
 **Stage 1 exit criteria:** Two browser tabs can complete: set URL → join → assign → ready → battle → attack until victory, with correct turn order and HP updates.
 

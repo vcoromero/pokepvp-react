@@ -13,16 +13,6 @@
 
 Frontend client for **PokePVP**: a lightweight real-time PvP game where two players pick a team of 3 Pokémon from a catalog, join a lobby, and battle turn by turn until one player wins.
 
-## Implementation progress
-
-| Stage   | Status | Description |
-|--------|--------|-------------|
-| 1.1    | ✅ Done | Project scaffold (Vite, React, TS, Tailwind, Zustand, React Router, Socket.IO). Config screen: backend URL, **Test connection** (`GET /health` — verified working), Save & go to Lobby. Router: `/`, `/config`, `/lobby`, `/battle`. Dev server on **port 3000**. |
-| 1.2    | ✅ Done | Socket client (connect, disconnect, join_lobby, assign_pokemon, ready, attack with acks). All server events sync to Zustand. Auto-connect when URL is set. `lastError` and `selectIsMyTurn`. |
-| 1.3    | ✅ Done | Lobby: nickname, Join, Get team (3 Pokémon with CDN sprites), Ready; redirect to battle when both ready. |
-| 1.4    | ✅ Done | Battle: two sides, active + bench, HpBar, Attack (isMyTurn), turn indicator, damage, winner overlay, Play again. Config/Lobby/Battle use small components. |
-| 1.5    | 🔲 Pending | Error/UX polish. |
-
 ## Overview
 
 This is the browser client that connects to the PokePVP backend via Socket.IO and REST (health check). It handles:

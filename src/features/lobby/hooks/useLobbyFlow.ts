@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
 import { assignPokemon, joinLobby, markReady } from '@/shared/api/socket'
 import { mapBackendError } from '@/shared/errors'
+import type {
+  AssignPokemonAckData,
+  AssignPokemonAckWrapped,
+  Lobby,
+} from '@/shared/types'
 import type { AssignPokemonDetail } from '@/shared/types/catalog'
 
 export function useLobbyFlow() {
@@ -53,22 +58,37 @@ export function useLobbyFlow() {
         return
       }
       if (data) {
-        useAppStore.getState().setTeam(data)
-        setTeamDetails(data.pokemonDetails ?? [])
+        // Backend ack is { team, lobby } (see socketio-test-flow.md); use .team for store and sync lobby
+        const wrapped = data as AssignPokemonAckData | AssignPokemonAckWrapped
+        const teamPayload: AssignPokemonAckData | undefined =
+          'team' in wrapped ? wrapped.team : wrapped
+        const lobbyPayload = 'team' in wrapped ? wrapped.lobby : undefined
+        if (teamPayload) {
+          useAppStore.getState().setTeam(teamPayload)
+          setTeamDetails(teamPayload.pokemonDetails ?? [])
+        }
+        if (lobbyPayload) {
+          useAppStore.getState().setLobby(lobbyPayload)
+        }
       }
     })
   }
 
   const ready = () => {
     setIsMarkingReady(true)
-    markReady((err, updatedLobby) => {
+    markReady((err, ackData) => {
       setIsMarkingReady(false)
       if (err) {
         setActionError(mapBackendError(err))
         return
       }
-      if (updatedLobby) {
-        useAppStore.getState().setLobby(updatedLobby)
+      // Backend ack is { lobby: Lobby } (see socketio-test-flow.md); use inner lobby so store has correct shape
+      const lobby: Lobby | null | undefined =
+        ackData && typeof ackData === 'object' && 'lobby' in ackData
+          ? (ackData as { lobby: Lobby }).lobby
+          : (ackData as Lobby | undefined) ?? null
+      if (lobby) {
+        useAppStore.getState().setLobby(lobby)
       }
     })
   }

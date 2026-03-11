@@ -14,5 +14,7 @@ export type {
   AckResponse,
   JoinLobbyAckData,
   AssignPokemonAckData,
+  AssignPokemonAckWrapped,
+  ReadyAckWrapped,
 } from './socket-events'
 export type { CatalogPokemonDetail, CatalogApiResponse, AssignPokemonDetail } from './catalog'

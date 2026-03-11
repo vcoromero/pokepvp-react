@@ -58,9 +58,12 @@ export function useBattleFlow() {
     return other
   }, [player, lobby])
 
-  /** Same session in both tabs: backend sees one player, so "opponent" is also us. */
+  /** Same session in both tabs: backend sees one player, so "opponent" is also us (or no opponent). */
   const isSamePlayerOnBothSides =
-    Boolean(player && opponentPlayerId && opponentPlayerId === player.id)
+    Boolean(player && lobby && (
+      (opponentPlayerId !== null && opponentPlayerId === player.id) ||
+      lobby.playerIds.length === 1
+    ))
 
   const myActive = useMemo(
     () =>

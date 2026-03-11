@@ -81,3 +81,14 @@ export interface JoinLobbyAckData {
 export interface AssignPokemonAckData extends Team {
   pokemonDetails: AssignPokemonDetail[]
 }
+
+/** Backend assign_pokemon ack sends { team, lobby } (see socketio-test-flow.md). */
+export interface AssignPokemonAckWrapped {
+  team: AssignPokemonAckData
+  lobby: Lobby
+}
+
+/** Backend ready ack sends { lobby } (see socketio-test-flow.md). */
+export interface ReadyAckWrapped {
+  lobby: Lobby
+}

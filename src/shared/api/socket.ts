@@ -64,7 +64,17 @@ export function connect(baseUrl: string): void {
   })
 
   socket.on('lobby_status', (payload: LobbyStatusPayload) => {
-    useAppStore.getState().setLobbyStatus(payload.lobby, payload.player)
+    // Only update our identity from lobby_status when we don't have one yet, or when
+    // the payload's player is us (same id). Otherwise we'd overwrite our player with
+    // the other client's when the backend broadcasts lobby_status to the whole room.
+    const currentPlayer = useAppStore.getState().player
+    const shouldUpdatePlayer =
+      payload.player !== undefined &&
+      (currentPlayer === null || currentPlayer.id === payload.player.id)
+    useAppStore.getState().setLobbyStatus(
+      payload.lobby,
+      shouldUpdatePlayer ? payload.player : undefined,
+    )
   })
 
   socket.on('battle_start', (payload: BattleStartPayload) => {
