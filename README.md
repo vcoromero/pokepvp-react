@@ -15,17 +15,27 @@ Frontend client for **PokePVP**: a lightweight real-time PvP game where two play
 
 ## Overview
 
-This is the browser client that connects to the [PokePVP backend](../pokepvp-back) via REST and Socket.IO. It handles:
+This is the browser client that connects to the PokePVP backend via Socket.IO and REST (health check). It handles:
 
-- **Catalog browsing** — display available Pokémon with stats and sprites
-- **Lobby & team selection** — enter a nickname, get assigned 3 random Pokémon, and confirm ready
-- **Real-time battle** — turn-based combat driven by Socket.IO events (attack, damage, defeat, battle end)
+- **Backend config** — set and persist backend base URL (local or deployed). **Test connection** button calls `GET /health` and shows "Connection OK" or failure.
+- **Lobby & team selection** — enter a nickname, get assigned 3 random Pokémon, and confirm ready (Stage 1.3).
+- **Real-time battle** — turn-based combat driven by Socket.IO events (Stage 1.4).
 
-For the full game rules and flow, see [docs/business-rules.md](docs/business-rules.md).
+## Run
+
+```bash
+npm install
+npm run dev
+```
+
+App runs at **http://localhost:3000**. Set the backend URL in the config screen and use "Test connection" to verify `GET /health` before saving.
 
 ## 📚 Documentation
 
+- **[docs/frontend-spec.md](docs/frontend-spec.md)** — Frontend architecture, stack, Zustand store, Socket.IO integration, and implementation stages (Stage 1: functional MVP; Stage 2: effects and audio).
 - **[docs/business-rules.md](docs/business-rules.md)** — Canonical business rules: catalog, team selection, lobby states, battle flow, damage formula, and events. Shared with the backend.
+- **[docs/backend-data-contracts.md](docs/backend-data-contracts.md)** — MongoDB schemas, domain shapes (what the backend returns), Socket.IO event payloads and ack returns. Use this to define TypeScript types.
+- **[docs/solid-clean-code-improvements.md](docs/solid-clean-code-improvements.md)** — SOLID & Clean Code audit: prioritized findings, applied improvements (Phase 1 complete), and roadmap for Phases 2–3.
 
 ---
 
