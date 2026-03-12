@@ -172,9 +172,9 @@ Risks identified at audit:
 Recommended minimum:
 
 - Unit tests:
-  - `shared/store/battle.ts` (`applyTurnResult`, winner updates, turn transitions)
-  - `shared/utils/url.ts`
-  - `shared/errors/index.ts`
+  - `shared/store/battle.ts` (`applyTurnResult`, winner updates, turn transitions) ✅ Basic happy-path tests added with Vitest
+  - `shared/utils/url.ts` ✅ Covered by `normalizeBaseUrl` and `isValidHttpUrl` tests
+  - `shared/errors/index.ts` ✅ Covered by `mapBackendError` tests (NotConnected, passthrough, generic fallback)
 - Integration tests:
   - `useLobbyFlow` with mocked socket acks/events
 - Component tests:
@@ -216,7 +216,7 @@ Why:
 | O — Open/Closed | Phase 2 | Reusable guards, typed event maps, modular handlers |
 | L — Liskov Substitution | Phase 2 | Applicable once transport interfaces are extracted |
 | I — Interface Segregation | ✅ Phase 1 partial | Narrower ack types; flow hooks expose only needed surface |
-| D — Dependency Inversion | Phase 2 | Socket client still depends directly on Zustand store |
+| D — Dependency Inversion | ✅ Phase 2 partial | Socket transport extracted to a dedicated client; gateway depends on abstractions |
 
 ---
 
@@ -264,8 +264,8 @@ Why:
 | No `unknown` casting in socket ack/event handling | ✅ Done |
 | URL normalization has a single source of truth | ✅ Done |
 | Backend errors normalized through a single mapper | ✅ Done |
-| Socket transport has no direct dependency on Zustand | Phase 2 |
-| Core battle transitions covered by automated tests | Phase 3 |
+| Socket transport has no direct dependency on Zustand | ✅ Done |
+| Core battle transitions covered by automated tests | ✅ Basic tests added for battle slice transitions |
 | Architectural import boundaries enforced by lint rules | Phase 3 |
 
 ---

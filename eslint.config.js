@@ -19,5 +19,25 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Enforce basic architectural boundaries
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // shared layer must not import features
+            {
+              group: ['@/features/*'],
+              message: 'shared/ layer cannot import from features/ (violates layering).',
+            },
+            // features should not cross-import other features directly
+            {
+              group: ['@/features/*/*'],
+              message: 'Feature modules should not import other feature modules directly.',
+            },
+          ],
+        },
+      ],
+    },
   },
 ])
