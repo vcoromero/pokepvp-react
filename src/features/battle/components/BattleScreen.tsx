@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
 import { connect } from '@/shared/api/socket'
 import { ConnectionBanner } from '@/shared/ui'
@@ -10,6 +11,7 @@ import { TurnIndicator } from './TurnIndicator'
 import { WinnerOverlay } from './WinnerOverlay'
 
 export function BattleScreen() {
+  const navigate = useNavigate()
   const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
   const socketStatus = useAppStore((s) => s.socketStatus)
   const lastError = useAppStore((s) => s.lastError)
@@ -59,9 +61,22 @@ export function BattleScreen() {
 
   const canSurrender = !isFinished
 
+  const myLabel = player?.nickname ? `You (${player.nickname})` : 'You'
+  const opponentLabel = 'Opponent'
+
   const handleRetry = () => {
     if (backendBaseUrl) connect(backendBaseUrl)
   }
+
+  useEffect(() => {
+    if (
+      lastError &&
+      lastError.code === 'ConflictError' &&
+      lastError.message.includes('This battle finished while you were away')
+    ) {
+      navigate('/lobby', { replace: true })
+    }
+  }, [lastError, navigate])
 
   return (
     <BattleLayout
@@ -122,7 +137,7 @@ export function BattleScreen() {
           active={displayOpponentActive}
           bench={opponentBench}
           maxHpByStateId={maxHpByPokemonStateId}
-          label="Opponent"
+          label={opponentLabel}
           damageText={damageOnOpponentSide}
           isActiveFainted={isOpponentActiveFainted}
         />
@@ -138,7 +153,7 @@ export function BattleScreen() {
           active={displayMyActive}
           bench={myBench}
           maxHpByStateId={maxHpByPokemonStateId}
-          label="You"
+          label={myLabel}
           damageText={damageOnMySide}
           isActiveFainted={isMyActiveFainted}
         />

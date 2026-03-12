@@ -54,9 +54,28 @@ export function connect(baseUrl: string): void {
   socket.on('connect', () => {
     useAppStore.setState({ socketStatus: 'connected' })
     useAppStore.getState().setLastError(null)
-    const { player, lobby } = useAppStore.getState()
+    const { player, lobby, resetBattle, resetSession, setLastError } = useAppStore.getState()
     if (player && lobby) {
-      rejoinLobbyInternal(player.id, lobby.id)
+      rejoinLobbyInternal(player.id, lobby.id, (err) => {
+        if (!err) return
+
+        if (
+          err.code === 'ConflictError' &&
+          err.message === 'Cannot rejoin: lobby is finished'
+        ) {
+          // Battle ended while the client was away (e.g. opponent surrendered or finished).
+          // Reset local battle and session state so user returns to nickname form.
+          resetBattle()
+          resetSession()
+          setLastError({
+            code: err.code,
+            message:
+              'This battle finished while you were away. Consider it resolved and start a new match from the lobby.',
+          })
+        } else {
+          setLastError(err)
+        }
+      })
     }
   })
 
