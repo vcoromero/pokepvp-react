@@ -1,4 +1,6 @@
 import { useLobbyFlow } from "../hooks/useLobbyFlow";
+import { useAppStore } from "@/shared/store";
+import { connect } from "@/shared/api/socket";
 import { LobbyHeader } from "./LobbyHeader";
 import { LobbyAlerts } from "./LobbyAlerts";
 import { NicknameForm } from "./NicknameForm";
@@ -7,6 +9,7 @@ import { TeamGrid } from "./TeamGrid";
 import { ReadySection } from "./ReadySection";
 
 export function LobbyScreen() {
+  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl);
   const {
     player,
     team,
@@ -29,6 +32,10 @@ export function LobbyScreen() {
     ready,
   } = useLobbyFlow();
 
+  const handleRetry = () => {
+    if (backendBaseUrl) connect(backendBaseUrl);
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 flex flex-col items-center">
       <LobbyHeader />
@@ -36,6 +43,7 @@ export function LobbyScreen() {
         socketStatus={socketStatus}
         lastError={lastError}
         actionError={actionError}
+        onRetry={handleRetry}
       />
 
       {!player ? (

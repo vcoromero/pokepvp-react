@@ -7,7 +7,7 @@ This document defines the architecture, stack, and implementation stages for the
 ## Implementation status (current)
 
 - **Stage 1.1 — Done.** Project scaffold (Vite + React + TypeScript, Tailwind, Zustand, React Router, Socket.IO client), shared types, config feature (backend URL input, **Test connection** via `GET /health` — verified working), persistence in localStorage, router (`/`, `/config`, `/lobby`, `/battle`). Dev server runs on **port 3000**.
-- **Stage 1.2 — Done.** `shared/api/socket.ts` (connect, disconnect, emit with ack: join_lobby, assign_pokemon, ready, attack). All server events (`lobby_status`, `battle_start`, `turn_result`, `battle_end`, `error`) update Zustand slices. Connection slice includes `lastError` for Socket errors. Auto-connect when URL is set (hook `useAutoConnect` on lobby/battle screens). Selector `selectIsMyTurn` for battle UI.
+- **Stage 1.2 — Done.** `shared/api/socket.ts` (connect, disconnect, emit with ack: join_lobby, rejoin_lobby, assign_pokemon, ready, attack). All server events (`lobby_status`, `battle_start`, `turn_result`, `battle_end`, `error`) update Zustand slices. Connection slice includes `lastError` for Socket errors. Auto-connect when URL is set (hook `useAutoConnect` on lobby/battle screens). On connect, if store has player and lobby, auto-emit `rejoin_lobby` to restore player context after reconnect (e.g. tab backgrounded). Selector `selectIsMyTurn` for battle UI.
 - **Stage 1.3 — Done.** Lobby UI: nickname input, Join, lobby state (players/ready count), Get team, 3 Pokémon (sprite from CDN + id), Ready, “Waiting for opponent”; on `battle_start` redirect to `/battle`.
 - **Stage 1.4 — Done.** Battle screen: two sides (you vs opponent), active Pokémon (sprite, name, HP bar), bench list, Attack button (when `isMyTurn`), turn indicator, damage text from `turn_result`, winner overlay and Play again. Component-based: BattleScreen, BattleLayout, BattleSide, ActivePokemonCard, BenchPokemonList, AttackButton, TurnIndicator, WinnerOverlay; shared HpBar; useBattleFlow.
 - **Stage 1.5 — Done.** Socket error and disconnect handling: `ConnectionBanner` in shared UI shows `lastError`, socket status, and "Change backend URL" link when disconnected; used on lobby and battle. Buttons already have loading/disabled states (Join, Get team, Ready, Attack).
@@ -172,7 +172,7 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 
 #### Stage 1.2 — Socket and store ✅ Done
 
-- [x] `shared/api/socket.ts`: connect, disconnect, emit with ack for join_lobby, assign_pokemon, ready, attack.
+- [x] `shared/api/socket.ts`: connect, disconnect, emit with ack for join_lobby, rejoin_lobby, assign_pokemon, ready, attack. On connect, auto rejoin when store has player + lobby.
 - [x] Listen to all server events and update Zustand (connection, session, battle slices). Connection slice includes `lastError` for Socket errors.
 - [x] Connection slice: `backendBaseUrl`, `socketStatus`; auto-connect when URL is set (or on demand from lobby screen) via `useAutoConnect`. Selector `selectIsMyTurn` for battle UI.
 
@@ -232,7 +232,7 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 - Multiple concurrent lobbies or matchmaking (backend currently single lobby).
 - Catalog browsing UI (team is random from backend).
 - Auth beyond “nickname in lobby” (no login/register).
-- Persisting game state across tab close (rejoin handled by new join_lobby if needed).
+- Persisting game state across full page reload (rejoin works when tab is still open and only the socket reconnects; full reload would need session storage or similar).
 - Backend deployment or database (already done).
 
 ---
