@@ -2,7 +2,7 @@
 
 # 🎮 PokePVP — Frontend ⚡
 
-[![Status](https://img.shields.io/badge/Status-Live%20on%20Netlify-2ECC71?style=flat-square)](https://pokepvp-lite.netlify.app/lobby)
+[![Status](https://img.shields.io/badge/Status-Live%20on%20Netlify-2ECC71?style=flat-square)](https://pokepvp-lite.netlify.app)
 [![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white)](https://socket.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -17,7 +17,7 @@ Frontend client for **PokePVP**: a lightweight real-time PvP game where two play
 
 You can start playing directly here:
 
-- **PokePVP (Netlify):** https://pokepvp-lite.netlify.app/lobby
+- **PokePVP (Netlify):** https://pokepvp-lite.netlify.app
 
 No local setup required: open the link, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
 
