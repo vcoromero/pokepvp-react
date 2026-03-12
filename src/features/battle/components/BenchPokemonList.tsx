@@ -12,29 +12,29 @@ export function BenchPokemonList({
   title = 'Bench',
 }: BenchPokemonListProps) {
   return (
-    <div className="rounded-lg bg-slate-800/80 p-2 border border-slate-600">
-      <span className="text-xs text-slate-400 uppercase tracking-wide block mb-2">
+    <div className="rounded-lg bg-slate-800/80 p-1.5 border border-slate-600">
+      <span className="text-xs text-slate-400 uppercase tracking-wide block mb-1.5">
         {title}
       </span>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-col gap-1.5">
         {pokemonList.map((p) => {
           const maxHp = maxHpByStateId[p.id] ?? p.currentHp
           return (
             <div
               key={p.id}
-              className={`flex flex-col items-center rounded p-2 min-w-[70px] ${
+              className={`flex flex-col items-center rounded p-1.5 min-w-[70px] ${
                 p.defeated ? 'opacity-50 bg-slate-700' : 'bg-slate-700/80'
               }`}
             >
               <img
                 src={p.sprite}
                 alt={p.name}
-                className="w-10 h-10 object-contain"
+                className="w-9 h-9 object-contain"
               />
-              <span className="text-xs text-white truncate max-w-full">
+              <span className="text-xs text-white truncate max-w-full leading-tight">
                 {p.name}
               </span>
-              <div className="w-full mt-1">
+              <div className="w-full mt-0.5">
                 <div className="h-1 w-full rounded-full bg-slate-600 overflow-hidden">
                   <div
                     className="h-full bg-green-500 rounded-full"
