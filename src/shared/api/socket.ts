@@ -37,8 +37,10 @@ export function getSocket(): Socket | null {
 export function connect(baseUrl: string): void {
   const url = normalizeBaseUrl(baseUrl)
 
-  if (socket?.connected) {
+  if (socket) {
+    socket.removeAllListeners()
     socket.disconnect()
+    socket = null
   }
 
   useAppStore.setState({ socketStatus: 'connecting' })

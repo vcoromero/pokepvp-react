@@ -1,4 +1,5 @@
 import { useAppStore } from '@/shared/store'
+import { connect } from '@/shared/api/socket'
 import { ConnectionBanner } from '@/shared/ui'
 import { useBattleFlow } from '../hooks/useBattleFlow'
 import { BattleLayout } from './BattleLayout'
@@ -8,6 +9,7 @@ import { TurnIndicator } from './TurnIndicator'
 import { WinnerOverlay } from './WinnerOverlay'
 
 export function BattleScreen() {
+  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
   const socketStatus = useAppStore((s) => s.socketStatus)
   const lastError = useAppStore((s) => s.lastError)
   const {
@@ -47,12 +49,17 @@ export function BattleScreen() {
       ? damageText
       : null
 
+  const handleRetry = () => {
+    if (backendBaseUrl) connect(backendBaseUrl)
+  }
+
   return (
     <BattleLayout>
       <ConnectionBanner
         socketStatus={socketStatus}
         lastError={lastError}
         actionError={attackError ? `Attack failed: ${attackError}` : null}
+        onRetry={handleRetry}
       />
       {isSamePlayerOnBothSides && (
         <div
