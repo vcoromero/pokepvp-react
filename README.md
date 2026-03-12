@@ -2,16 +2,24 @@
 
 # 🎮 PokePVP — Frontend ⚡
 
-[![Status](https://img.shields.io/badge/Status-In%20Development-F39C12?style=flat-square)](.)
+[![Status](https://img.shields.io/badge/Status-Live%20on%20Netlify-2ECC71?style=flat-square)](https://pokepvp-lite.netlify.app/lobby)
 [![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white)](https://socket.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-</div>
+<br />
 
-> **Work in progress.** This repository is under active development.
+> **Playable and deployed.** The game is live and ready to play. The core flow matches the defined business rules and you can already battle end‑to‑end; further UI/UX polish and visual improvements are planned for future iterations.
 
 Frontend client for **PokePVP**: a lightweight real-time PvP game where two players pick a team of 3 Pokémon from a catalog, join a lobby, and battle turn by turn until one player wins.
+
+## Live demo
+
+You can start playing directly here:
+
+- **PokePVP (Netlify):** https://pokepvp-lite.netlify.app/lobby
+
+No local setup required: open the link, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
 
 ## Overview
 
@@ -19,7 +27,7 @@ This is the browser client that connects to the PokePVP backend via Socket.IO an
 
 - **Backend config** — set and persist backend base URL (local or deployed). **Test connection** button calls `GET /health` and shows "Connection OK" or failure.
 - **Lobby & team selection** — enter a nickname, get assigned 3 random Pokémon, and confirm ready (Stage 1.3).
-- **Real-time battle** — turn-based combat driven by Socket.IO events (Stage 1.4).
+- **Real-time battle** — turn-based combat driven by Socket.IO events (Stage 1.4), including a **Surrender** action to concede very long battles.
 
 ## Run
 
