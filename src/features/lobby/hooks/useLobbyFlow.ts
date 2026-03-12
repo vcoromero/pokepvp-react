@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { shallow } from 'zustand/shallow'
 import { useAppStore } from '@/shared/store'
 import { assignPokemon, joinLobby, markReady } from '@/shared/api/socket'
 import { mapBackendError } from '@/shared/errors'
@@ -12,12 +13,24 @@ import type { AssignPokemonDetail } from '@/shared/types/catalog'
 
 export function useLobbyFlow() {
   const navigate = useNavigate()
-  const player = useAppStore((s) => s.player)
-  const lobby = useAppStore((s) => s.lobby)
-  const team = useAppStore((s) => s.team)
-  const battle = useAppStore((s) => s.battle)
-  const socketStatus = useAppStore((s) => s.socketStatus)
-  const lastError = useAppStore((s) => s.lastError)
+  const {
+    player,
+    lobby,
+    team,
+    battle,
+    socketStatus,
+    lastError,
+  } = useAppStore(
+    (s) => ({
+      player: s.player,
+      lobby: s.lobby,
+      team: s.team,
+      battle: s.battle,
+      socketStatus: s.socketStatus,
+      lastError: s.lastError,
+    }),
+    shallow,
+  )
 
   const [nickname, setNickname] = useState('')
   const [isJoining, setIsJoining] = useState(false)
