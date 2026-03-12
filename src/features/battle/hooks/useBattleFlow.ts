@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore, selectIsMyTurn } from '@/shared/store'
-import { attack as emitAttack } from '@/shared/api/socket'
+import { attack as emitAttack, surrender as emitSurrender } from '@/shared/api/socket'
 import type { PokemonState } from '@/shared/types'
 
 /** How long to keep showing the fainted Pokémon before switching to the next (ms). */
@@ -164,6 +164,18 @@ export function useBattleFlow() {
     })
   }, [battle, isMyTurn, isFinished])
 
+  const [isSurrendering, setIsSurrendering] = useState(false)
+  const [surrenderError, setSurrenderError] = useState<string | null>(null)
+  const surrender = useCallback(() => {
+    if (!battle?.lobbyId || isFinished) return
+    setSurrenderError(null)
+    setIsSurrendering(true)
+    emitSurrender(battle.lobbyId, (err) => {
+      setIsSurrendering(false)
+      if (err) setSurrenderError(err.message)
+    })
+  }, [battle, isFinished])
+
   const playAgain = useCallback(() => {
     resetBattle()
     resetSession()
@@ -195,6 +207,9 @@ export function useBattleFlow() {
     attack,
     isAttacking,
     attackError,
+    surrender,
+    isSurrendering,
+    surrenderError,
     playAgain,
   }
 }

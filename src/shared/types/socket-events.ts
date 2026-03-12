@@ -51,6 +51,19 @@ export interface BattleEndPayload {
   battleId: string
   lobbyId: string
   winnerId: string
+  loserId?: string
+  /** "surrender" when battle ends by surrender; undefined for normal victories. */
+  reason?: 'surrender'
+}
+
+/** surrender ack payload. Mirrors battle_end plus lobby snapshot. */
+export interface SurrenderAckPayload {
+  battleId: string
+  lobbyId: string
+  winnerId: string
+  loserId: string
+  reason: 'surrender'
+  lobby: Lobby
 }
 
 /** error event payload. */

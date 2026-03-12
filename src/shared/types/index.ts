@@ -16,5 +16,6 @@ export type {
   AssignPokemonAckData,
   AssignPokemonAckWrapped,
   ReadyAckWrapped,
+  SurrenderAckPayload,
 } from './socket-events'
 export type { CatalogPokemonDetail, CatalogApiResponse, AssignPokemonDetail } from './catalog'

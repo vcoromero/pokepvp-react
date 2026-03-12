@@ -132,7 +132,13 @@ Types (`Lobby`, `Battle`, `PokemonState`, `TurnResultPayload`) live in `shared/t
 ### 5.1 Client API (`shared/api/socket.ts`)
 
 - **Connect:** `connect(baseUrl: string)` — `io(baseUrl, { path: '/socket.io', ... })`.
-- **Emit (with ack):** `joinLobby(nickname)`, `assignPokemon()`, `markReady()`, `attack(lobbyId)` — no payload for assign/ready (server uses `socket.data`).
+- **Emit (with ack):**
+  - `joinLobby(nickname)`
+  - `rejoinLobby(playerId, lobbyId)` (used internally on reconnect)
+  - `assignPokemon()`
+  - `markReady()`
+  - `attack(lobbyId)`
+  - `surrender(lobbyId)` — extra feature to let a player concede the current battle.
 - **Listen:** Register once on connect: `lobby_status`, `battle_start`, `turn_result`, `battle_end`, `error`.
 - **Store sync:** On each event, update the corresponding Zustand slice so UI stays in sync.
 
@@ -141,7 +147,8 @@ Types (`Lobby`, `Battle`, `PokemonState`, `TurnResultPayload`) live in `shared/t
 - **lobby_status:** `{ lobby, player? }`
 - **battle_start:** `{ battle, pokemonStates }` — battle includes `nextToActPlayerId`.
 - **turn_result:** `{ battleId, lobbyId, attacker, defender, nextActivePokemon?, battleFinished, nextToActPlayerId? }`
-- **battle_end:** `{ battleId, lobbyId, winnerId }`
+- **battle_end:** `{ battleId, lobbyId, winnerId, loserId?, reason? }`
+  - When the battle ends by surrender, backend also includes `loserId` and `reason: "surrender"`.
 - **error:** `{ code, message }` — show in UI (toast or inline).
 
 Server stores `playerId` and `lobbyId` on the socket; client must not send them for `assign_pokemon` or `ready`. For `attack`, payload is `{ lobbyId }` (and server validates against socket.data).
@@ -153,7 +160,10 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 3. **assign_pokemon** `{}` → ack returns team; server emits `lobby_status`.
 4. **ready** `{}` → when both ready, server emits `battle_start` with `{ battle, pokemonStates }` (battle includes `nextToActPlayerId`).
 5. **attack** `{ lobbyId }` (only when `nextToActPlayerId === my playerId`) → ack and server emit `turn_result`; use `nextToActPlayerId` for next turn; repeat until `battle_end`.
-6. **battle_end** `{ battleId, lobbyId, winnerId }` — show winner and optionally allow new match.
+6. **surrender** `{ lobbyId }` — optional; lets the current player concede the battle. On success:
+   - Ack: `{ battleId, lobbyId, winnerId, loserId, reason: "surrender", lobby }`
+   - Server emits `battle_end` with `reason: "surrender"` so both clients can update UI.
+7. **battle_end** `{ battleId, lobbyId, winnerId, loserId?, reason? }` — show winner and optionally allow new match.
 
 ---
 
@@ -187,8 +197,9 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 - [x] Battle screen: two sides (you vs opponent); show active Pokémon (sprite, name, HP bar); list other 2 with alive/defeated.
 - [x] HP bar component: width by percentage (currentHp / maxHp); derive max from initial state or catalog.
 - [x] "Attack" button: enabled only when `isMyTurn` and battle not finished; on click emit `attack(lobbyId)`.
+- [x] "Surrender" button: available while the battle is in progress; opens a confirmation modal and, on confirm, emits `surrender(lobbyId)` so the opponent wins immediately.
 - [x] On `turn_result`: update HP, show damage text, mark defeated; if `nextActivePokemon` switch displayed active.
-- [x] On `battle_end`: show winner (and optionally “Play again” that resets and goes back to lobby/config).
+- [x] On `battle_end`: show winner (and optionally “Play again” that resets and goes back to lobby/config). Supports both normal victories and victories by surrender (via `reason: "surrender"`).
 
 #### Stage 1.5 — Error handling and UX ✅ Done
 

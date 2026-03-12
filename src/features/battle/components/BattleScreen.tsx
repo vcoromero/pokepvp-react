@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAppStore } from '@/shared/store'
 import { connect } from '@/shared/api/socket'
 import { ConnectionBanner } from '@/shared/ui'
@@ -29,11 +30,16 @@ export function BattleScreen() {
     attack,
     isAttacking,
     attackError,
+    surrender,
+    isSurrendering,
+    surrenderError,
     playAgain,
     player,
     opponentPlayerId,
     lastTurnResult,
   } = useBattleFlow()
+
+  const [isSurrenderModalOpen, setIsSurrenderModalOpen] = useState(false)
 
   const myBench = myPokemonOrder.filter((p) => p.id !== displayMyActive?.id)
   const opponentBench = opponentPokemonOrder.filter((p) => p.id !== displayOpponentActive?.id)
@@ -51,6 +57,8 @@ export function BattleScreen() {
       ? damageText
       : null
 
+  const canSurrender = !isFinished
+
   const handleRetry = () => {
     if (backendBaseUrl) connect(backendBaseUrl)
   }
@@ -59,7 +67,17 @@ export function BattleScreen() {
     <BattleLayout
       bottomBar={
         !isFinished ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-3">
+            {canSurrender && (
+              <button
+                type="button"
+                onClick={() => setIsSurrenderModalOpen(true)}
+                disabled={isSurrendering}
+                className="py-2.5 px-4 rounded-lg border border-slate-500 text-slate-200 text-sm sm:text-base hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSurrendering ? 'Surrendering…' : 'Surrender'}
+              </button>
+            )}
             <AttackButton
               onClick={attack}
               disabled={!isMyTurn || isFinished || isAttacking}
@@ -81,7 +99,13 @@ export function BattleScreen() {
       <ConnectionBanner
         socketStatus={socketStatus}
         lastError={lastError}
-        actionError={attackError ? `Attack failed: ${attackError}` : null}
+        actionError={
+          attackError
+            ? `Attack failed: ${attackError}`
+            : surrenderError
+              ? `Surrender failed: ${surrenderError}`
+              : null
+        }
         onRetry={handleRetry}
       />
       {isSamePlayerOnBothSides && (
@@ -122,6 +146,41 @@ export function BattleScreen() {
 
       {isFinished && (
         <WinnerOverlay isWinner={!!isWinner} onPlayAgain={playAgain} />
+      )}
+
+      {isSurrenderModalOpen && canSurrender && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 px-4">
+          <div className="w-full max-w-sm rounded-lg bg-slate-800 border border-slate-600 p-4 space-y-3">
+            <h2 className="text-lg font-semibold">Surrender battle?</h2>
+            <p className="text-sm text-slate-300">
+              If you surrender, your opponent will win this battle immediately.
+            </p>
+            {surrenderError && (
+              <p className="text-sm text-red-400">{surrenderError}</p>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="px-3 py-2 text-sm rounded border border-slate-500 text-slate-200 hover:bg-slate-700"
+                onClick={() => setIsSurrenderModalOpen(false)}
+                disabled={isSurrendering}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 text-sm rounded bg-red-600 text-white font-semibold hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  surrender()
+                  setIsSurrenderModalOpen(false)
+                }}
+                disabled={isSurrendering}
+              >
+                Yes, surrender
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </BattleLayout>
   )

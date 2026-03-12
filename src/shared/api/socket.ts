@@ -10,6 +10,7 @@ import type {
   JoinLobbyAckData,
   Lobby,
   LobbyStatusPayload,
+  SurrenderAckPayload,
   TurnResultPayload,
 } from '@/shared/types'
 import { useAppStore } from '@/shared/store'
@@ -201,6 +202,23 @@ export function attack(
     return
   }
   socket.emit('attack', { lobbyId }, (res: AckResponse<TurnResultPayload>) => {
+    if (isAckError(res)) {
+      ack?.(res.error, undefined)
+      return
+    }
+    ack?.(null, res)
+  })
+}
+
+export function surrender(
+  lobbyId: string,
+  ack?: (err: AppError | null, result?: SurrenderAckPayload) => void,
+): void {
+  if (!socket?.connected) {
+    ack?.({ code: 'NotConnected', message: 'Socket not connected' }, undefined)
+    return
+  }
+  socket.emit('surrender', { lobbyId }, (res: AckResponse<SurrenderAckPayload>) => {
     if (isAckError(res)) {
       ack?.(res.error, undefined)
       return
