@@ -199,10 +199,10 @@ These are the exact shapes emitted by the server to all clients in the lobby roo
 
 ### Event: `lobby_status`
 
-Emitted after `join_lobby`, `assign_pokemon`, and `ready`.
+Emitted after `join_lobby`, `rejoin_lobby`, `assign_pokemon`, and `ready`.
 
 ```ts
-// After join_lobby (includes player for the joining client)
+// After join_lobby or rejoin_lobby (includes player for the joining/rejoining client)
 { lobby: Lobby, player: Player }
 
 // After assign_pokemon and ready (player field may be absent)
@@ -299,6 +299,7 @@ When the client emits with a callback (ack), the server replies:
 | Emit | Ack payload on success | Ack payload on error |
 |------|------------------------|----------------------|
 | `join_lobby` | `{ player: Player, lobby: Lobby }` | `{ error: { code, message } }` |
+| `rejoin_lobby` | `{ player: Player, lobby: Lobby }` — reattaches this connection to an existing player in a lobby (e.g. after reconnect) | `{ error: { code, message } }` |
 | `assign_pokemon` | `{ team: Team & { pokemonDetails }, lobby: Lobby }` — use `ack.team` and optionally `ack.lobby` | `{ error: { code, message } }` |
 | `ready` | `{ lobby: Lobby }` — use `ack.lobby` for the updated lobby | `{ error: { code, message } }` |
 | `attack` | Same shape as `turn_result` event | `{ error: { code, message } }` |
@@ -367,3 +368,4 @@ const isMyTurn = battle.nextToActPlayerId === myPlayer.id;
 - `pokemonId` (in Team and PokemonState) is a **number** — it is the catalog's external integer ID, not a MongoDB ObjectId.
 - `nextToActPlayerId` is absent (undefined) in `turn_result` when `battleFinished` is true. Always check `battleFinished` before reading it.
 - The backend validates `lobbyId` in the `attack` payload against `socket.data.lobbyId`. It rejects events if they don't match. For `assign_pokemon` and `ready`, no payload IDs are needed (server uses `socket.data`).
+- **Reconnection:** If the client loses the socket (e.g. tab backgrounded, app switch) and reconnects, the new socket has no player context. The client should emit `rejoin_lobby` with `{ playerId, lobbyId }` (from the existing store) so the server reattaches this connection to the same player and lobby; then `assign_pokemon`, `ready`, and `attack` work as usual. The lobby must still be in `waiting`, `ready`, or `battling` (not `finished`).

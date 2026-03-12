@@ -51,6 +51,10 @@ export function connect(baseUrl: string): void {
   socket.on('connect', () => {
     useAppStore.setState({ socketStatus: 'connected' })
     useAppStore.getState().setLastError(null)
+    const { player, lobby } = useAppStore.getState()
+    if (player && lobby) {
+      rejoinLobbyInternal(player.id, lobby.id)
+    }
   })
 
   socket.on('disconnect', (reason) => {
@@ -119,6 +123,39 @@ export function joinLobby(
     }
     ack?.(null, res)
   })
+}
+
+/**
+ * Reattach this connection to an existing player in a lobby (e.g. after reconnect).
+ * Call this explicitly or rely on auto-rejoin on connect when store has player + lobby.
+ */
+function rejoinLobbyInternal(
+  playerId: string,
+  lobbyId: string,
+  ack?: (err: AppError | null, data?: JoinLobbyAckData) => void,
+): void {
+  if (!socket?.connected) {
+    ack?.({ code: 'NotConnected', message: 'Socket not connected' }, undefined)
+    return
+  }
+  socket.emit('rejoin_lobby', { playerId, lobbyId }, (res: AckResponse<JoinLobbyAckData>) => {
+    if (isAckError(res)) {
+      useAppStore.getState().setLastError(res.error)
+      ack?.(res.error, undefined)
+      return
+    }
+    useAppStore.getState().setLobbyStatus(res.lobby, res.player)
+    useAppStore.getState().setLastError(null)
+    ack?.(null, res)
+  })
+}
+
+export function rejoinLobby(
+  playerId: string,
+  lobbyId: string,
+  ack?: (err: AppError | null, data?: JoinLobbyAckData) => void,
+): void {
+  rejoinLobbyInternal(playerId, lobbyId, ack)
 }
 
 export function assignPokemon(
