@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore, selectIsMyTurn } from '@/shared/store'
-import { attack as emitAttack, surrender as emitSurrender } from '@/shared/api/socket'
+import { useBattleService } from '@/app/services-context'
 import type { PokemonState } from '@/shared/types'
 
 /** How long to keep showing the fainted Pokémon before switching to the next (ms). */
@@ -44,6 +44,7 @@ function getPokemonInOrder(
 
 export function useBattleFlow() {
   const navigate = useNavigate()
+  const battleService = useBattleService()
   const battle = useAppStore((s) => s.battle)
   const pokemonStates = useAppStore((s) => s.pokemonStates)
   const maxHpByPokemonStateId = useAppStore((s) => s.maxHpByPokemonStateId)
@@ -51,8 +52,6 @@ export function useBattleFlow() {
   const player = useAppStore((s) => s.player)
   const team = useAppStore((s) => s.team)
   const lobby = useAppStore((s) => s.lobby)
-  const resetBattle = useAppStore((s) => s.resetBattle)
-  const resetSession = useAppStore((s) => s.resetSession)
   const isMyTurn = useAppStore(selectIsMyTurn)
 
   const opponentPlayerId = useMemo(() => {
@@ -61,7 +60,6 @@ export function useBattleFlow() {
     return other
   }, [player, lobby])
 
-  /** Same session in both tabs: backend sees one player, so "opponent" is also us (or no opponent). */
   const isSamePlayerOnBothSides =
     Boolean(player && lobby && (
       (opponentPlayerId !== null && opponentPlayerId === player.id) ||
@@ -104,7 +102,6 @@ export function useBattleFlow() {
   const winnerId = battle?.winnerId ?? null
   const isWinner = winnerId === player?.id
 
-  /** When defender faints, we keep showing them for FAINT_DISPLAY_MS before switching to next active. */
   const [faintDisplayUntil, setFaintDisplayUntil] = useState<number | null>(null)
 
   useEffect(() => {
@@ -143,7 +140,6 @@ export function useBattleFlow() {
   const isMyActiveFainted = Boolean(displayMyActive?.defeated)
   const isOpponentActiveFainted = Boolean(displayOpponentActive?.defeated)
 
-  /** True when battle exists but turn order was not received (backend may send null). */
   const isWaitingForTurnOrder =
     Boolean(battle && !isFinished && battle.nextToActPlayerId == null)
 
@@ -154,33 +150,30 @@ export function useBattleFlow() {
 
   const [isAttacking, setIsAttacking] = useState(false)
   const [attackError, setAttackError] = useState<string | null>(null)
-  const attack = useCallback(() => {
+  const attack = useCallback(async () => {
     if (!battle?.lobbyId || !isMyTurn || isFinished) return
     setAttackError(null)
     setIsAttacking(true)
-    emitAttack(battle.lobbyId, (err) => {
-      setIsAttacking(false)
-      if (err) setAttackError(err.message)
-    })
-  }, [battle, isMyTurn, isFinished])
+    const result = await battleService.attack(battle.lobbyId)
+    setIsAttacking(false)
+    if (result.error) setAttackError(result.error)
+  }, [battle, isMyTurn, isFinished, battleService])
 
   const [isSurrendering, setIsSurrendering] = useState(false)
   const [surrenderError, setSurrenderError] = useState<string | null>(null)
-  const surrender = useCallback(() => {
+  const surrender = useCallback(async () => {
     if (!battle?.lobbyId || isFinished) return
     setSurrenderError(null)
     setIsSurrendering(true)
-    emitSurrender(battle.lobbyId, (err) => {
-      setIsSurrendering(false)
-      if (err) setSurrenderError(err.message)
-    })
-  }, [battle, isFinished])
+    const result = await battleService.surrender(battle.lobbyId)
+    setIsSurrendering(false)
+    if (result.error) setSurrenderError(result.error)
+  }, [battle, isFinished, battleService])
 
   const playAgain = useCallback(() => {
-    resetBattle()
-    resetSession()
+    battleService.resetAndLeave()
     navigate('/lobby', { replace: true })
-  }, [resetBattle, resetSession, navigate])
+  }, [battleService, navigate])
 
   return {
     battle,

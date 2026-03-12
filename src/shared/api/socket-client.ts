@@ -13,7 +13,7 @@ import type {
   SurrenderAckPayload,
   TurnResultPayload,
 } from '@/shared/types'
-import { normalizeBaseUrl } from '@/shared/utils/url'
+import { toConnectableBaseUrl } from '@/shared/utils/url'
 
 export interface SocketEventHandlers {
   onConnect?: () => void
@@ -111,7 +111,7 @@ export const socketClient: SocketClient = {
   },
 
   connect(baseUrl: string, handlers: SocketEventHandlers): void {
-    const url = normalizeBaseUrl(baseUrl)
+    const url = toConnectableBaseUrl(baseUrl)
 
     if (socket) {
       socket.removeAllListeners()

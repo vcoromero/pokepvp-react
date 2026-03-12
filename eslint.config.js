@@ -19,21 +19,77 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {},
+  },
+  // shared/ must not import from features/
+  {
+    files: ['src/shared/**/*.{ts,tsx}'],
     rules: {
-      // Enforce basic architectural boundaries
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            // shared layer must not import features
             {
-              group: ['@/features/*'],
-              message: 'shared/ layer cannot import from features/ (violates layering).',
+              group: ['@/features*'],
+              message: 'shared/ must not import from features/ (layering).',
             },
-            // features should not cross-import other features directly
+          ],
+        },
+      ],
+    },
+  },
+  // domain/ must not depend on application, infrastructure, or features
+  {
+    files: ['src/domain/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/application*', '@/infrastructure*', '@/features*'],
+              message:
+                'domain/ must not import from application, infrastructure, or features (hexagonal boundaries).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // application/ must not depend on features or infrastructure
+  {
+    files: ['src/application/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/features*', '@/infrastructure*'],
+              message:
+                'application/ must not import from features or infrastructure (hexagonal boundaries).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // features/ must not import infrastructure or other feature modules (app/ may import both for routing and wiring)
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/infrastructure*'],
+              message:
+                'features/ must not import infrastructure directly; use application services or shared (hexagonal boundaries).',
+            },
             {
               group: ['@/features/*/*'],
-              message: 'Feature modules should not import other feature modules directly.',
+              message: 'Feature modules must not import other feature modules directly.',
             },
           ],
         },

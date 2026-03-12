@@ -1,4 +1,4 @@
-import { normalizeBaseUrl } from '@/shared/utils/url'
+import { toConnectableBaseUrl } from '@/shared/utils/url'
 
 export interface HealthResponse {
   ok?: boolean
@@ -7,7 +7,7 @@ export interface HealthResponse {
 }
 
 export async function checkHealth(baseUrl: string): Promise<HealthResponse | null> {
-  const url = `${normalizeBaseUrl(baseUrl)}/health`
+  const url = `${toConnectableBaseUrl(baseUrl)}/health`
   try {
     const res = await fetch(url, { method: 'GET' })
     const data = (await res.json().catch(() => ({}))) as HealthResponse

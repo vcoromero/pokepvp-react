@@ -8,9 +8,12 @@ import type {
   TurnResultPayload,
 } from '@/shared/types'
 
+export type RealtimeConnectionState = 'connected' | 'disconnected'
+
 export interface RealtimeGateway {
   connect(baseUrl: string): void
   disconnect(): void
+  getConnectionState(): RealtimeConnectionState
 
   joinLobby(
     nickname: string,

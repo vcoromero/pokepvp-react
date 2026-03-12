@@ -27,6 +27,43 @@ function createTestStore(initial?: Partial<AppStore>) {
 }
 
 describe('createBattleSlice', () => {
+  it('setBattle updates battle state', () => {
+    const { getState, slice } = createTestStore()
+    const battle = { id: 'b1', lobbyId: 'l1', winnerId: null, nextToActPlayerId: 'p1' } as any
+
+    slice.setBattle(battle)
+
+    expect(getState().battle).toEqual(battle)
+  })
+
+  it('setPokemonStates updates pokemonStates', () => {
+    const { getState, slice } = createTestStore()
+    const pokemonStates = [
+      { id: 's1', battleId: 'b1', pokemonId: 1, playerId: 'p1', currentHp: 100, defeated: false, name: 'A', sprite: '', type: [] },
+    ]
+
+    slice.setPokemonStates(pokemonStates)
+
+    expect(getState().pokemonStates).toEqual(pokemonStates)
+  })
+
+  it('setLastTurnResult updates lastTurnResult', () => {
+    const { getState, slice } = createTestStore()
+    const payload: TurnResultPayload = {
+      battleId: 'b1',
+      lobbyId: 'l1',
+      attacker: { playerId: 'p1', pokemonId: 1 },
+      defender: { playerId: 'p2', pokemonId: 2, damage: 10, previousHp: 80, currentHp: 70, defeated: false },
+      nextActivePokemon: { playerId: 'p2', pokemonId: 2 },
+      battleFinished: false,
+      nextToActPlayerId: 'p2',
+    }
+
+    slice.setLastTurnResult(payload)
+
+    expect(getState().lastTurnResult).toEqual(payload)
+  })
+
   it('setBattleStart initializes battle, pokemonStates and maxHpByPokemonStateId', () => {
     const { getState, slice } = createTestStore()
 
@@ -115,6 +152,44 @@ describe('createBattleSlice', () => {
 
     expect(state.battle?.winnerId).toBe('p1')
     expect(state.lastTurnResult).toEqual(payload)
+  })
+
+  it('setBattleEnd updates battle winnerId when battle exists', () => {
+    const battle = { id: 'b1', lobbyId: 'l1', winnerId: null, nextToActPlayerId: 'p1' } as any
+    const { getState, slice } = createTestStore({ battle })
+
+    slice.setBattleEnd('p1')
+
+    expect(getState().battle?.winnerId).toBe('p1')
+  })
+
+  it('setBattleEnd does not mutate state when battle is null', () => {
+    const { getState, slice } = createTestStore({ battle: null })
+
+    slice.setBattleEnd('p1')
+
+    expect(getState().battle).toBeNull()
+  })
+
+  it('resetBattle clears battle, pokemonStates, maxHpByPokemonStateId and lastTurnResult', () => {
+    const battle = { id: 'b1', lobbyId: 'l1', winnerId: null, nextToActPlayerId: 'p1' } as any
+    const pokemonStates = [
+      { id: 's1', battleId: 'b1', pokemonId: 1, playerId: 'p1', currentHp: 100, defeated: false, name: 'A', sprite: '', type: [] },
+    ]
+    const { getState, slice } = createTestStore({
+      battle,
+      pokemonStates,
+      maxHpByPokemonStateId: { s1: 100 },
+      lastTurnResult: {} as TurnResultPayload,
+    })
+
+    slice.resetBattle()
+
+    const state = getState()
+    expect(state.battle).toBeNull()
+    expect(state.pokemonStates).toEqual([])
+    expect(state.maxHpByPokemonStateId).toEqual({})
+    expect(state.lastTurnResult).toBeNull()
   })
 })
 

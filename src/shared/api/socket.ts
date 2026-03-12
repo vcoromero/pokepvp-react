@@ -1,4 +1,5 @@
 import type { AppError, AssignPokemonAckData, JoinLobbyAckData, Lobby, SurrenderAckPayload, TurnResultPayload } from '@/shared/types'
+import { socketClient } from '@/shared/api/socket-client'
 import { SocketIoRealtimeGateway } from '@/infrastructure/realtime/SocketIoRealtimeGateway'
 import { ZustandConnectionStore } from '@/infrastructure/store/ZustandConnectionStore'
 import { ZustandSessionStore } from '@/infrastructure/store/ZustandSessionStore'
@@ -19,6 +20,10 @@ export function connect(baseUrl: string): void {
 
 export function disconnect(): void {
   realtimeGateway.disconnect()
+}
+
+export function getSocket() {
+  return socketClient.getSocket()
 }
 
 export function joinLobby(

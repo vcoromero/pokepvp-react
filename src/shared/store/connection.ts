@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import { CONSTANTS } from '@/config/constants'
+import { CONSTANTS } from '@/shared/constants'
 import { normalizeBaseUrl } from '@/shared/utils/url'
 import type { AppStore, ConnectionSlice } from './types'
 

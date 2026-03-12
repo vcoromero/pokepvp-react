@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useConnectionService } from '@/app/services-context'
 import { useAppStore } from '@/shared/store'
-import { checkHealth } from '@/shared/api/http'
-import { connect } from '@/shared/api/socket'
-import { normalizeBaseUrl } from '@/shared/utils/url'
 
 export function useConfigFlow() {
   const navigate = useNavigate()
+  const connection = useConnectionService()
   const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
-  const setBackendUrl = useAppStore((s) => s.setBackendUrl)
 
   const [inputUrl, setInputUrl] = useState(backendBaseUrl ?? '')
   const [testMessage, setTestMessage] = useState<string | null>(null)
@@ -18,35 +16,23 @@ export function useConfigFlow() {
   const canSubmit = inputUrl.trim().length > 0
 
   const save = () => {
-    const url = normalizeBaseUrl(inputUrl)
-    if (!url) return
-    setBackendUrl(url)
+    const result = connection.setBackendUrlAndConnect(inputUrl.trim())
+    if (!result.success) {
+      setTestMessage(result.error ?? 'Invalid URL')
+      setTestSuccess(false)
+      return
+    }
     setTestMessage(null)
-    connect(url)
     navigate('/lobby')
   }
 
   const testConnection = async () => {
-    const url = normalizeBaseUrl(inputUrl)
-    if (!url) {
-      setTestMessage('Enter a URL first.')
-      setTestSuccess(false)
-      return
-    }
     setIsTesting(true)
     setTestMessage(null)
     try {
-      const result = await checkHealth(url)
-      if (result?.ok) {
-        setTestMessage('Connection OK')
-        setTestSuccess(true)
-      } else {
-        setTestMessage(result ? `HTTP ${result.status}` : 'Connection failed')
-        setTestSuccess(false)
-      }
-    } catch {
-      setTestMessage('Connection failed')
-      setTestSuccess(false)
+      const result = await connection.testConnection(inputUrl.trim())
+      setTestMessage(result.message)
+      setTestSuccess(result.success)
     } finally {
       setIsTesting(false)
     }

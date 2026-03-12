@@ -1,4 +1,4 @@
-import type { RealtimeGateway } from '@/application/ports/RealtimeGateway'
+import type { RealtimeGateway, RealtimeConnectionState } from '@/application/ports/RealtimeGateway'
 import type {
   AppError,
   AssignPokemonAckData,
@@ -14,6 +14,30 @@ import { socketClient, type SocketEventHandlers } from '@/shared/api/socket-clie
 import type { ConnectionStore } from '@/application/ports/ConnectionStore'
 import type { SessionStore } from '@/application/ports/SessionStore'
 import type { BattleRepository } from '@/application/ports/BattleRepository'
+import {
+  BattleEndPayloadSchema,
+  BattleStartPayloadSchema,
+  ErrorPayloadSchema,
+  LobbyStatusPayloadSchema,
+  TurnResultPayloadSchema,
+} from '@/shared/schemas/socket-events'
+
+const PAYLOAD_VALIDATION_ERROR: AppError = {
+  code: 'InvalidPayload',
+  message: 'Invalid data from server. Please refresh or try again.',
+}
+
+function handleValidationFailure(
+  connectionStore: ConnectionStore,
+  eventName: string,
+  error: unknown,
+): void {
+  if (typeof console !== 'undefined' && console.error) {
+    console.error(`[Socket] Invalid payload for "${eventName}":`, error)
+  }
+  connectionStore.setLastError(PAYLOAD_VALIDATION_ERROR)
+  connectionStore.setSocketStatus('error')
+}
 
 export class SocketIoRealtimeGateway implements RealtimeGateway {
   private readonly connectionStore: ConnectionStore
@@ -72,31 +96,61 @@ export class SocketIoRealtimeGateway implements RealtimeGateway {
       },
 
       onLobbyStatus: (payload: LobbyStatusPayload) => {
+        const result = LobbyStatusPayloadSchema.safeParse(payload)
+        if (!result.success) {
+          handleValidationFailure(this.connectionStore, 'lobby_status', result.error)
+          return
+        }
+        const data = result.data as LobbyStatusPayload
         const currentPlayer = this.sessionStore.getPlayer()
         const shouldUpdatePlayer =
-          payload.player !== undefined &&
-          (currentPlayer === null || currentPlayer.id === payload.player.id)
-
+          data.player !== undefined &&
+          (currentPlayer === null || currentPlayer.id === data.player.id)
         this.sessionStore.setLobbyStatus(
-          payload.lobby,
-          shouldUpdatePlayer ? payload.player : undefined,
+          data.lobby,
+          shouldUpdatePlayer ? data.player : undefined,
         )
       },
 
       onBattleStart: (payload: BattleStartPayload) => {
-        this.battleRepository.setBattleStart(payload.battle, payload.pokemonStates)
+        const result = BattleStartPayloadSchema.safeParse(payload)
+        if (!result.success) {
+          handleValidationFailure(this.connectionStore, 'battle_start', result.error)
+          return
+        }
+        const data = result.data as BattleStartPayload
+        this.battleRepository.setBattleStart(data.battle, data.pokemonStates)
       },
 
       onTurnResult: (payload: TurnResultPayload) => {
-        this.battleRepository.applyTurnResult(payload)
+        const result = TurnResultPayloadSchema.safeParse(payload)
+        if (!result.success) {
+          handleValidationFailure(this.connectionStore, 'turn_result', result.error)
+          return
+        }
+        this.battleRepository.applyTurnResult(result.data as TurnResultPayload)
       },
 
       onBattleEnd: (payload: BattleEndPayload) => {
-        this.battleRepository.setBattleEnd(payload.winnerId)
+        const result = BattleEndPayloadSchema.safeParse(payload)
+        if (!result.success) {
+          handleValidationFailure(this.connectionStore, 'battle_end', result.error)
+          return
+        }
+        const data = result.data as BattleEndPayload
+        this.battleRepository.setBattleEnd(data.winnerId)
       },
 
-      onErrorEvent: (payload) => {
-        this.connectionStore.setLastError({ code: payload.code, message: payload.message })
+      onErrorEvent: (payload: { code: string; message: string }) => {
+        const result = ErrorPayloadSchema.safeParse(payload)
+        if (!result.success) {
+          handleValidationFailure(this.connectionStore, 'error', result.error)
+          return
+        }
+        this.connectionStore.setLastError({
+          code: result.data.code,
+          message: result.data.message,
+        })
         this.connectionStore.setSocketStatus('error')
       },
     }
@@ -108,6 +162,10 @@ export class SocketIoRealtimeGateway implements RealtimeGateway {
   disconnect(): void {
     socketClient.disconnect()
     this.connectionStore.setSocketStatus('disconnected')
+  }
+
+  getConnectionState(): RealtimeConnectionState {
+    return socketClient.getSocket()?.connected ? 'connected' : 'disconnected'
   }
 
   joinLobby(
