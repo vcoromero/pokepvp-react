@@ -7,11 +7,19 @@
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white)](https://socket.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-</div>
+<br />
 
-> **Playable and deployed.** The game is live at [`pokepvp-lite.netlify.app`](https://pokepvp-lite.netlify.app/lobby). The core flow matches the defined business rules and is fully playable; further UI/UX polish and visual improvements are planned.
+> **Playable and deployed.** The game is live and ready to play. The core flow matches the defined business rules and you can already battle end‑to‑end; further UI/UX polish and visual improvements are planned for future iterations.
 
 Frontend client for **PokePVP**: a lightweight real-time PvP game where two players pick a team of 3 Pokémon from a catalog, join a lobby, and battle turn by turn until one player wins.
+
+## Live demo
+
+You can start playing directly here:
+
+- **PokePVP (Netlify):** https://pokepvp-lite.netlify.app/lobby
+
+No local setup required: open the link, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
 
 ## Overview
 
