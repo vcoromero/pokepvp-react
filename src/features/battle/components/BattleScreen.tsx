@@ -13,8 +13,10 @@ export function BattleScreen() {
   const socketStatus = useAppStore((s) => s.socketStatus)
   const lastError = useAppStore((s) => s.lastError)
   const {
-    myActive,
-    opponentActive,
+    displayMyActive,
+    displayOpponentActive,
+    isMyActiveFainted,
+    isOpponentActiveFainted,
     myPokemonOrder,
     opponentPokemonOrder,
     maxHpByPokemonStateId,
@@ -33,19 +35,19 @@ export function BattleScreen() {
     lastTurnResult,
   } = useBattleFlow()
 
-  const myBench = myPokemonOrder.filter((p) => p.id !== myActive?.id)
-  const opponentBench = opponentPokemonOrder.filter((p) => p.id !== opponentActive?.id)
+  const myBench = myPokemonOrder.filter((p) => p.id !== displayMyActive?.id)
+  const opponentBench = opponentPokemonOrder.filter((p) => p.id !== displayOpponentActive?.id)
 
   // Only show damage on the active Pokémon that actually received it; when a Pokémon
   // is knocked out and a new one enters, the active changes so we hide the old value.
   const damageOnMySide =
     lastTurnResult?.defender.playerId === player?.id &&
-    lastTurnResult?.defender.pokemonId === myActive?.pokemonId
+    lastTurnResult?.defender.pokemonId === displayMyActive?.pokemonId
       ? damageText
       : null
   const damageOnOpponentSide =
     lastTurnResult?.defender.playerId === opponentPlayerId &&
-    lastTurnResult?.defender.pokemonId === opponentActive?.pokemonId
+    lastTurnResult?.defender.pokemonId === displayOpponentActive?.pokemonId
       ? damageText
       : null
 
@@ -54,7 +56,28 @@ export function BattleScreen() {
   }
 
   return (
-    <BattleLayout>
+    <BattleLayout
+      bottomBar={
+        !isFinished ? (
+          <div className="flex justify-center">
+            <AttackButton
+              onClick={attack}
+              disabled={!isMyTurn || isFinished || isAttacking}
+              isAttacking={isAttacking}
+              disabledReason={
+                isFinished
+                  ? 'Battle ended'
+                  : isAttacking
+                    ? 'Attacking…'
+                    : !isMyTurn
+                      ? 'Not your turn'
+                      : undefined
+              }
+            />
+          </div>
+        ) : null
+      }
+    >
       <ConnectionBanner
         socketStatus={socketStatus}
         lastError={lastError}
@@ -69,14 +92,15 @@ export function BattleScreen() {
           Same player detected on both sides (e.g. two tabs with same session). For 2-player testing, use an <strong>incognito window</strong> or another browser for the second player, and use different nicknames to tell them apart.
         </div>
       )}
-      <div className="flex flex-col gap-8 max-w-2xl mx-auto w-full">
+      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 w-full max-w-4xl mx-auto pb-2 md:w-[80%]">
         {/* Opponent side (top) */}
         <BattleSide
-          active={opponentActive}
+          active={displayOpponentActive}
           bench={opponentBench}
           maxHpByStateId={maxHpByPokemonStateId}
           label="Opponent"
           damageText={damageOnOpponentSide}
+          isActiveFainted={isOpponentActiveFainted}
         />
 
         <TurnIndicator
@@ -87,29 +111,13 @@ export function BattleScreen() {
 
         {/* My side (bottom) */}
         <BattleSide
-          active={myActive}
+          active={displayMyActive}
           bench={myBench}
           maxHpByStateId={maxHpByPokemonStateId}
           label="You"
           damageText={damageOnMySide}
+          isActiveFainted={isMyActiveFainted}
         />
-
-        <div className="flex justify-center pt-4">
-          <AttackButton
-            onClick={attack}
-            disabled={!isMyTurn || isFinished || isAttacking}
-            isAttacking={isAttacking}
-            disabledReason={
-              isFinished
-                ? 'Battle ended'
-                : isAttacking
-                  ? 'Attacking…'
-                  : !isMyTurn
-                    ? 'Not your turn'
-                    : undefined
-            }
-          />
-        </div>
       </div>
 
       {isFinished && (

@@ -1,8 +1,11 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore, selectIsMyTurn } from '@/shared/store'
 import { attack as emitAttack } from '@/shared/api/socket'
 import type { PokemonState } from '@/shared/types'
+
+/** How long to keep showing the fainted Pokémon before switching to the next (ms). */
+const FAINT_DISPLAY_MS = 1800
 
 /** First non-defeated Pokémon for a player (by team order for self, by array order for opponent). */
 function getActivePokemon(
@@ -101,6 +104,45 @@ export function useBattleFlow() {
   const winnerId = battle?.winnerId ?? null
   const isWinner = winnerId === player?.id
 
+  /** When defender faints, we keep showing them for FAINT_DISPLAY_MS before switching to next active. */
+  const [faintDisplayUntil, setFaintDisplayUntil] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!lastTurnResult?.defender.defeated) return
+    const until = Date.now() + FAINT_DISPLAY_MS
+    setFaintDisplayUntil(until)
+    const t = setTimeout(() => setFaintDisplayUntil(null), FAINT_DISPLAY_MS)
+    return () => clearTimeout(t)
+  }, [lastTurnResult?.defender.defeated, lastTurnResult?.defender.playerId, lastTurnResult?.defender.pokemonId])
+
+  const faintedDefenderState = useMemo(() => {
+    if (!lastTurnResult?.defender.defeated || !faintDisplayUntil || Date.now() > faintDisplayUntil) return null
+    return pokemonStates.find(
+      (s) =>
+        s.playerId === lastTurnResult.defender.playerId &&
+        s.pokemonId === lastTurnResult.defender.pokemonId
+    ) ?? null
+  }, [lastTurnResult, pokemonStates, faintDisplayUntil])
+
+  const isInFaintDelay = faintDisplayUntil != null && Date.now() <= faintDisplayUntil
+
+  const displayMyActive = useMemo((): PokemonState | undefined => {
+    if (isInFaintDelay && faintedDefenderState && lastTurnResult && player && lastTurnResult.defender.playerId === player.id) {
+      return faintedDefenderState
+    }
+    return myActive
+  }, [isInFaintDelay, faintedDefenderState, lastTurnResult, player, myActive])
+
+  const displayOpponentActive = useMemo((): PokemonState | undefined => {
+    if (isInFaintDelay && faintedDefenderState && lastTurnResult && opponentPlayerId && lastTurnResult.defender.playerId === opponentPlayerId) {
+      return faintedDefenderState
+    }
+    return opponentActive
+  }, [isInFaintDelay, faintedDefenderState, lastTurnResult, opponentPlayerId, opponentActive])
+
+  const isMyActiveFainted = Boolean(displayMyActive?.defeated)
+  const isOpponentActiveFainted = Boolean(displayOpponentActive?.defeated)
+
   /** True when battle exists but turn order was not received (backend may send null). */
   const isWaitingForTurnOrder =
     Boolean(battle && !isFinished && battle.nextToActPlayerId == null)
@@ -136,6 +178,10 @@ export function useBattleFlow() {
     lobbyId: battle?.lobbyId ?? null,
     myActive,
     opponentActive,
+    displayMyActive,
+    displayOpponentActive,
+    isMyActiveFainted,
+    isOpponentActiveFainted,
     myPokemonOrder,
     opponentPokemonOrder,
     maxHpByPokemonStateId,
