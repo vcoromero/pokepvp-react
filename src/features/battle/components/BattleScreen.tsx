@@ -85,7 +85,7 @@ export function BattleScreen() {
           Same player detected on both sides (e.g. two tabs with same session). For 2-player testing, use an <strong>incognito window</strong> or another browser for the second player, and use different nicknames to tell them apart.
         </div>
       )}
-      <div className="flex flex-col gap-8 w-[80%] max-w-4xl mx-auto pb-2">
+      <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 w-full max-w-4xl mx-auto pb-2 md:w-[80%]">
         {/* Opponent side (top) */}
         <BattleSide
           active={displayOpponentActive}

@@ -12,11 +12,11 @@ export function BenchPokemonList({
   title = 'Bench',
 }: BenchPokemonListProps) {
   return (
-    <div className="rounded-lg bg-slate-800/80 p-1.5 border border-slate-600">
+    <div className="rounded-lg bg-slate-800/80 p-1.5 border border-slate-600 shrink-0">
       <span className="text-xs text-slate-400 uppercase tracking-wide block mb-1.5">
         {title}
       </span>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-row flex-wrap gap-1.5 sm:flex-col sm:gap-1.5">
         {pokemonList.map((p) => {
           const maxHp = maxHpByStateId[p.id] ?? p.currentHp
           return (
