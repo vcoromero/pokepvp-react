@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
-import { connect } from '@/shared/api/socket'
+import { useConnectionService } from '@/app/services-context'
 import { ConnectionBanner } from '@/shared/ui'
 import { useBattleFlow } from '../hooks/useBattleFlow'
 import { BattleLayout } from './BattleLayout'
@@ -12,7 +12,6 @@ import { WinnerOverlay } from './WinnerOverlay'
 
 export function BattleScreen() {
   const navigate = useNavigate()
-  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
   const socketStatus = useAppStore((s) => s.socketStatus)
   const lastError = useAppStore((s) => s.lastError)
   const {
@@ -64,8 +63,9 @@ export function BattleScreen() {
   const myLabel = player?.nickname ? `You (${player.nickname})` : 'You'
   const opponentLabel = 'Opponent'
 
+  const connectionService = useConnectionService()
   const handleRetry = () => {
-    if (backendBaseUrl) connect(backendBaseUrl)
+    connectionService.reconnect()
   }
 
   useEffect(() => {

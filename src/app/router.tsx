@@ -5,6 +5,15 @@ import { ConfigScreen } from '@/features/config/components/ConfigScreen'
 import { LobbyScreen } from '@/features/lobby/components/LobbyScreen'
 import { BattleScreen } from '@/features/battle/components/BattleScreen'
 
+function RequireBackendUrl({ children }: { children: React.ReactNode }) {
+  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
+  useAutoConnect()
+  if (!backendBaseUrl) {
+    return <Navigate to="/config" replace />
+  }
+  return <>{children}</>
+}
+
 function RootRedirect() {
   const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
   if (backendBaseUrl) {
@@ -14,25 +23,23 @@ function RootRedirect() {
 }
 
 function LobbyRoute() {
-  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
-  useAutoConnect()
-  if (!backendBaseUrl) {
-    return <Navigate to="/config" replace />
-  }
-  return <LobbyScreen />
+  return (
+    <RequireBackendUrl>
+      <LobbyScreen />
+    </RequireBackendUrl>
+  )
 }
 
 function BattleRoute() {
-  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
   const battle = useAppStore((s) => s.battle)
-  useAutoConnect()
-  if (!backendBaseUrl) {
-    return <Navigate to="/config" replace />
-  }
   if (!battle) {
     return <Navigate to="/lobby" replace />
   }
-  return <BattleScreen />
+  return (
+    <RequireBackendUrl>
+      <BattleScreen />
+    </RequireBackendUrl>
+  )
 }
 
 const router = createBrowserRouter(

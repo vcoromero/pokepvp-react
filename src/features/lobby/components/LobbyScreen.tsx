@@ -1,7 +1,6 @@
-import { useLobbyFlow } from "../hooks/useLobbyFlow";
-import { useAppStore } from "@/shared/store";
-import { connect } from "@/shared/api/socket";
-import { LobbyHeader } from "./LobbyHeader";
+import { useLobbyFlow } from '../hooks/useLobbyFlow'
+import { useConnectionService } from '@/app/services-context'
+import { LobbyHeader } from './LobbyHeader'
 import { LobbyAlerts } from "./LobbyAlerts";
 import { NicknameForm } from "./NicknameForm";
 import { LobbyStatusCard } from "./LobbyStatusCard";
@@ -9,7 +8,6 @@ import { TeamGrid } from "./TeamGrid";
 import { ReadySection } from "./ReadySection";
 
 export function LobbyScreen() {
-  const backendBaseUrl = useAppStore((s) => s.backendBaseUrl);
   const {
     player,
     team,
@@ -30,11 +28,12 @@ export function LobbyScreen() {
     join,
     getTeam,
     ready,
-  } = useLobbyFlow();
+  } = useLobbyFlow()
 
+  const connectionService = useConnectionService()
   const handleRetry = () => {
-    if (backendBaseUrl) connect(backendBaseUrl);
-  };
+    connectionService.reconnect()
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 flex flex-col items-center">
