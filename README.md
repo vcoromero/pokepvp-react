@@ -17,7 +17,7 @@ You can start playing directly here:
 
 - **PokePVP (Netlify):** https://pokepvp-lite.netlify.app
 
-No local setup required: open the link, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
+No local setup required: open the link, add https://pokepvp.onrender.com as backend service, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
 
 ## Overview
 
