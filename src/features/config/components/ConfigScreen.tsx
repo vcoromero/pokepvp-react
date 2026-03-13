@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { useConfigFlow } from '../hooks/useConfigFlow'
 import { ConfigHeader } from './ConfigHeader'
 import { BackendUrlInput } from './BackendUrlInput'
 import { ConfigMessage } from './ConfigMessage'
 import { ConfigActions } from './ConfigActions'
+import { audioPlayer } from '@/shared/audio'
 import hostBackendImage from '@/shared/assets/images/host-backend.png'
 
 export function ConfigScreen() {
+  const [muted, setMuted] = useState(() => audioPlayer.isMuted())
   const {
     inputUrl,
     setInputUrl,
@@ -42,6 +45,19 @@ export function ConfigScreen() {
             onTest={testConnection}
             onSave={save}
           />
+          <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={muted}
+              onChange={() => {
+                const next = !muted
+                audioPlayer.setMuted(next)
+                setMuted(next)
+              }}
+              className="rounded border-slate-500 bg-slate-800 text-amber-500 focus:ring-amber-500"
+            />
+            Mute music
+          </label>
         </div>
       </div>
     </div>

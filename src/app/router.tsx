@@ -1,9 +1,15 @@
-import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider, Outlet } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
 import { useAutoConnect } from '@/shared/hooks/useAutoConnect'
+import { useAudioSync } from '@/shared/audio/useAudioSync'
 import { ConfigScreen } from '@/features/config/components/ConfigScreen'
 import { LobbyScreen } from '@/features/lobby/components/LobbyScreen'
 import { BattleScreen } from '@/features/battle/components/BattleScreen'
+
+function AppLayout() {
+  useAudioSync()
+  return <Outlet />
+}
 
 function RequireBackendUrl({ children }: { children: React.ReactNode }) {
   const backendBaseUrl = useAppStore((s) => s.backendBaseUrl)
@@ -44,12 +50,12 @@ function BattleRoute() {
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <>
+    <Route element={<AppLayout />}>
       <Route path="/" element={<RootRedirect />} />
       <Route path="/config" element={<ConfigScreen />} />
       <Route path="/lobby" element={<LobbyRoute />} />
       <Route path="/battle" element={<BattleRoute />} />
-    </>
+    </Route>
   )
 )
 
