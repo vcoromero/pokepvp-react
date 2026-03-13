@@ -6,6 +6,7 @@ import { ConfigMessage } from './ConfigMessage'
 import { ConfigActions } from './ConfigActions'
 import { audioPlayer } from '@/shared/audio'
 import hostBackendImage from '@/shared/assets/images/host-backend.png'
+import { BackgroundImage } from '@/shared/ui/BackgroundImage'
 
 export function ConfigScreen() {
   const [muted, setMuted] = useState(() => audioPlayer.isMuted())
@@ -22,13 +23,8 @@ export function ConfigScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-white p-4 relative">
-      {/* Full-screen config/backend background */}
-      <div className="absolute inset-0 z-0 bg-slate-900" aria-hidden>
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${hostBackendImage})` }}
-        />
-        <div className="absolute inset-0 bg-slate-900/55" />
+      <div className="absolute inset-0 z-0">
+        <BackgroundImage src={hostBackendImage} />
       </div>
 
       <div className="relative z-10 w-full max-w-md panel-overlay p-6">

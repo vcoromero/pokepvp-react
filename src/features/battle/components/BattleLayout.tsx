@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import stadiumImage from '@/shared/assets/images/stadium.png'
+import { BackgroundImage } from '@/shared/ui/BackgroundImage'
 
 interface BattleLayoutProps {
   children: ReactNode
@@ -10,16 +11,8 @@ interface BattleLayoutProps {
 export function BattleLayout({ children, bottomBar }: BattleLayoutProps) {
   return (
     <div className="min-h-screen text-white flex flex-col relative">
-      {/* Full-screen stadium background */}
-      <div
-        className="absolute inset-0 z-0 bg-slate-900"
-        aria-hidden
-      >
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${stadiumImage})` }}
-        />
-        <div className="absolute inset-0 bg-slate-900/50" />
+      <div className="absolute inset-0 z-0">
+        <BackgroundImage src={stadiumImage} overlayClassName="bg-slate-900/50" />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col min-h-0 px-3 pb-2 pt-2 sm:px-4 sm:pt-4">

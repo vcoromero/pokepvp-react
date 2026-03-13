@@ -7,6 +7,7 @@ import { LobbyStatusCard } from "./LobbyStatusCard";
 import { TeamGrid } from "./TeamGrid";
 import { ReadySection } from "./ReadySection";
 import lobbyImage from '@/shared/assets/images/lobby.png'
+import { BackgroundImage } from '@/shared/ui/BackgroundImage'
 
 export function LobbyScreen() {
   const {
@@ -38,13 +39,8 @@ export function LobbyScreen() {
 
   return (
     <div className="min-h-screen text-white flex flex-col items-center relative">
-      {/* Full-screen lobby background */}
-      <div className="absolute inset-0 z-0 bg-slate-900" aria-hidden>
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${lobbyImage})` }}
-        />
-        <div className="absolute inset-0 bg-slate-900/55" />
+      <div className="absolute inset-0 z-0">
+        <BackgroundImage src={lobbyImage} />
       </div>
 
       <div className="relative z-10 w-full min-h-screen p-4 flex flex-col items-center">
