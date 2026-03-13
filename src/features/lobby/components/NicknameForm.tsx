@@ -14,10 +14,10 @@ export function NicknameForm({
   disabled,
 }: NicknameFormProps) {
   return (
-    <div className="w-full max-w-sm space-y-4">
+    <div className="w-full space-y-4">
       <label
         htmlFor="nickname"
-        className="block text-sm font-medium text-slate-300"
+        className="block text-sm font-medium text-slate-200"
       >
         Nickname
       </label>
@@ -28,7 +28,7 @@ export function NicknameForm({
         onChange={(e) => onChange(e.target.value)}
         placeholder="Enter your nickname"
         maxLength={30}
-        className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
       />
       <button
         type="button"

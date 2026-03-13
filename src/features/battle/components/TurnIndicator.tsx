@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { PulseGlowText } from '@/shared/ui'
 
 interface TurnIndicatorProps {
   isMyTurn: boolean
@@ -27,14 +28,16 @@ export function TurnIndicator({
   return (
     <motion.p
       className={`text-center text-sm font-medium ${
-        isMyTurn ? 'text-amber-400' : 'text-slate-400'
+        isMyTurn ? 'text-amber-400' : 'text-slate-300'
       }`}
       key={isMyTurn ? 'my' : 'opp'}
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      {isMyTurn ? "Your turn — click Attack!" : "Opponent's turn…"}
+      <PulseGlowText>
+        {isMyTurn ? "Your turn — click Attack!" : "Opponent's turn…"}
+      </PulseGlowText>
     </motion.p>
   )
 }

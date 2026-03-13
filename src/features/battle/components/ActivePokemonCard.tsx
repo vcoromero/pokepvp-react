@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import type { PokemonState } from '@/shared/types'
-import { HpBar } from '@/shared/ui'
+import { HpBar, TypeBadges } from '@/shared/ui'
 
 const cardTransition = { duration: 0.25, ease: 'easeOut' as const }
 
@@ -50,7 +50,7 @@ export function ActivePokemonCard({
       <div className="flex flex-col flex-1 min-w-0">
         <span className="text-sm font-medium text-white truncate md:text-base">{pokemon.name}</span>
         {pokemon.type.length > 0 && (
-          <span className="text-xs text-slate-400 truncate md:text-sm">{pokemon.type.join(' / ')}</span>
+          <TypeBadges types={pokemon.type} size="md" className="mt-0.5" />
         )}
         <div className="w-full mt-1.5 md:mt-2">
           <HpBar currentHp={pokemon.currentHp} maxHp={maxHp} />

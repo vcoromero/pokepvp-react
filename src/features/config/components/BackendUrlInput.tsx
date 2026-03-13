@@ -8,7 +8,7 @@ export function BackendUrlInput({ value, onChange }: BackendUrlInputProps) {
     <div>
       <label
         htmlFor="backend-url"
-        className="block text-sm font-medium text-slate-300 mb-1"
+        className="block text-sm font-medium text-slate-200 mb-1"
       >
         Backend URL
       </label>

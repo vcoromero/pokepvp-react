@@ -1,3 +1,5 @@
+import { PulseGlowText } from '@/shared/ui'
+
 interface ReadySectionProps {
   onReady: () => void
   isMarkingReady: boolean
@@ -24,8 +26,8 @@ export function ReadySection({
         {isMarkingReady ? 'Marking ready…' : 'Ready'}
       </button>
       {showWaiting && (
-        <p className="text-slate-400 text-center">
-          Waiting for opponent to be ready…
+        <p className="text-slate-300 text-center text-sm">
+          <PulseGlowText>Waiting for opponent to be ready…</PulseGlowText>
         </p>
       )}
     </>

@@ -1,4 +1,5 @@
 import type { AssignPokemonDetail } from '@/shared/types/catalog'
+import { TypeBadges } from '@/shared/ui'
 
 interface PokemonCardProps {
   pokemon: AssignPokemonDetail
@@ -14,9 +15,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       />
       <span className="text-sm font-medium text-white mt-1">{pokemon.name}</span>
       {pokemon.type.length > 0 && (
-        <span className="text-xs text-slate-400">
-          {pokemon.type.join(' / ')}
-        </span>
+        <TypeBadges types={pokemon.type} size="sm" className="mt-1 justify-center" />
       )}
     </div>
   )
