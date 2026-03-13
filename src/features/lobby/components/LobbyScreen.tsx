@@ -57,7 +57,7 @@ export function LobbyScreen() {
       />
 
       {!player ? (
-        <div className="w-full max-w-sm rounded-xl bg-slate-900/85 backdrop-blur-sm p-6 shadow-xl">
+        <div className="w-full max-w-sm panel-overlay p-6">
           <NicknameForm
             value={nickname}
             onChange={setNickname}
@@ -82,7 +82,7 @@ export function LobbyScreen() {
               type="button"
               onClick={getTeam}
               disabled={isGettingTeam || !isConnected}
-              className="w-full py-2 px-4 rounded-lg bg-slate-600 text-white font-medium hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-base w-full py-2 px-4 bg-slate-600 text-white font-medium hover:bg-slate-500"
             >
               {isGettingTeam ? "Getting team…" : "Get team"}
             </button>

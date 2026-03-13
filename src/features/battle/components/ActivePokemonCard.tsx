@@ -44,7 +44,7 @@ export function ActivePokemonCard({
         <img
           src={pokemon.sprite}
           alt={pokemon.name}
-          className={`w-16 h-16 object-contain md:w-28 md:h-28 ${isFainted ? 'grayscale' : ''}`}
+          className={`pixel-art w-16 h-16 object-contain md:w-28 md:h-28 ${isFainted ? 'grayscale' : ''}`}
         />
       </div>
       <div className="flex flex-col flex-1 min-w-0">

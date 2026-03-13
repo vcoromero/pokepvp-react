@@ -68,7 +68,7 @@ export function BattleSide({
             shakeKey={shakeKey}
           />
         ) : (
-          <div className="rounded-lg bg-slate-800 p-4 border border-slate-600 min-w-0 min-h-[180px] md:min-w-[340px] md:min-h-[220px] flex items-center justify-center h-full">
+          <div className="panel-card p-4 min-w-0 min-h-[180px] md:min-w-[340px] md:min-h-[220px] flex items-center justify-center h-full">
             <span className="text-slate-500 text-sm">No active Pokémon</span>
           </div>
         )}

@@ -11,6 +11,7 @@ This document defines the architecture, stack, and implementation stages for the
 - **Stage 1.3 — Done.** Lobby UI: nickname input, Join, lobby state (players/ready count), Get team, 3 Pokémon (sprite from CDN + id), Ready, “Waiting for opponent”; on `battle_start` redirect to `/battle`.
 - **Stage 1.4 — Done.** Battle screen: two sides (you vs opponent), active Pokémon (sprite, name, HP bar), bench list, Attack button (when `isMyTurn`), turn indicator, damage text from `turn_result`, winner overlay and Play again. Component-based: BattleScreen, BattleLayout, BattleSide, ActivePokemonCard, BenchPokemonList, AttackButton, TurnIndicator, WinnerOverlay; shared HpBar; useBattleFlow.
 - **Stage 1.5 — Done.** Socket error and disconnect handling: `ConnectionBanner` in shared UI shows `lastError`, socket status, and "Change backend URL" link when disconnected; used on lobby and battle. Buttons already have loading/disabled states (Join, Get team, Ready, Attack).
+- **Stage 2.1 — Done.** Full-screen background images: stadium in battle (`BattleLayout`), lobby in lobby screen (`LobbyScreen`), host/backend in config screen (`ConfigScreen`); assets in `shared/assets/images/` (stadium.png, lobby.png, host-backend.png) with dark overlay. Framer Motion: entrance animations for battle sides and Pokémon cards, stagger on bench; hit-shake on defender when damage is applied; transitions on AttackButton, TurnIndicator, WinnerOverlay, BenchPokemonList. Shared UI: `TypeBadge` / `TypeBadges` (oval gradient, white text, 18 types; sizes xs/sm/md) in ActivePokemonCard and lobby TeamGrid; `PulseGlowText` (pulse + glow, no box) for turn indicator and "Waiting for opponent to be ready…". Readability: semi-transparent panels for config form and lobby nickname form; "Joined as" pill on lobby; battle bottom bar with backdrop blur. Optional overlays: BattleStartOverlay (short "Battle start!" then fade out); WinnerOverlay with short "Victory!" / "Defeat!" phase then result + Play again. **8-bit theme:** Press Start 2P font (Google Fonts), `.pixel-art` for sharp sprites, `.btn-base` / `.text-btn-8bit` for button text size; **shared CSS** in `src/index.css` (`@layer components`): `.panel-card`, `.panel-card-subtle`, `.panel-overlay`, `.input-8bit`, `.btn-base` to avoid repeating class strings. Lobby team: three cards in a single row (flex-nowrap, overflow-x-auto), compact type badges (size xs), sprite w-16 h-16.
 
 ---
 
@@ -28,7 +29,7 @@ This document defines the architecture, stack, and implementation stages for the
 |--------|--------|--------|
 | Framework | React 18+ | With TypeScript strict mode |
 | Build | Vite | Fast dev and small bundles |
-| Styling | Tailwind CSS | Utility-first; no heavy UI library |
+| Styling | Tailwind CSS | Utility-first; shared component classes in `src/index.css` (§3.4); 8-bit font (Press Start 2P) |
 | Global state | Zustand | Lightweight; one store split by domain (connection, session, battle) |
 | Real-time | Socket.IO client | Same events as backend (see business-rules §7) |
 | Animations | Framer Motion | Stage 2: battle FX, transitions |
@@ -72,13 +73,13 @@ src/
       session.ts
       battle.ts
       index.ts
-    ui/                   # Reusable UI (buttons, cards, HpBar, etc.)
+    ui/                   # Reusable UI (HpBar, TypeBadge, PulseGlowText, etc.)
     types/                # TS types (Player, Lobby, Battle, events)
     hooks/                # useBackendUrl, useSocket, etc.
     utils/
-  assets/                 # Images, sounds (Stage 2)
-    images/
-    sounds/
+    assets/               # Images, sounds (Stage 2)
+      images/             # stadium.png, lobby.png, host-backend.png
+      sounds/             # (Stage 2.2)
 ```
 
 ### 3.2 Layering Rules
@@ -94,6 +95,14 @@ src/
 Backend (Socket.IO)  →  socket.ts (listeners)  →  Zustand store  →  React components
 User actions         →  socket.emit(...)       →  (ack / server events)  →  store updates
 ```
+
+### 3.4 Styling and theme (8-bit)
+
+- **Font:** "Press Start 2P" (Google Fonts) applied globally; base font-size 12px (mobile) / 14px (sm+).
+- **Sprites:** Class `.pixel-art` (in `src/index.css`) keeps scaled sprites sharp (`image-rendering: pixelated`); used on all Pokémon sprite `<img>`s.
+- **Buttons:** `.btn-base` for common button styling (font-size 0.8rem, rounded-lg, disabled states); components add color/hover. `.text-btn-8bit` available for non-button text when needed.
+- **Shared component classes** (`@layer components` in `src/index.css`): `.panel-card` (dark slate panel), `.panel-card-subtle` (slate/80), `.panel-overlay` (floating form container with backdrop-blur), `.input-8bit` (dark input + amber focus ring). Use these instead of repeating long Tailwind strings.
+- **TypeBadge:** Sizes `xs` (lobby team), `sm` (bench), `md` (battle cards). Lobby team cards use single row, compact badges, sprite 16×16 (Tailwind w-16 h-16).
 
 ---
 
@@ -215,11 +224,11 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 
 **Objective:** Add stadium background, Framer Motion animations, and Howler.js music/SFX without changing game logic.
 
-#### Stage 2.1 — Visual
+#### Stage 2.1 — Visual ✅ Done
 
-- [ ] Battle screen: background image (stadium) full-screen; position sprites and HP bars on top.
-- [ ] Framer Motion: entrance for Pokémon when battle starts and when next Pokémon enters; “hit” shake on defender when damage is applied; subtle transitions for buttons and panels.
-- [ ] Optional: short “battle start” and “victory/defeat” overlays.
+- [x] Battle screen: background image (stadium) full-screen; position sprites and HP bars on top.
+- [x] Lobby screen: full-screen background (lobby.png); nickname form in panel; "Joined as" pill. Config screen: full-screen background (host-backend.png); form in panel. Framer Motion: entrance for battle sides (stagger) and ActivePokemonCard; hit-shake on defender; transitions on AttackButton, TurnIndicator, WinnerOverlay, BenchPokemonList. TypeBadge/TypeBadges (oval, white text, 18 types). PulseGlowText for turn and "Waiting for opponent to be ready…". See Implementation status above for full list.
+- [x] Optional: short “battle start” and “victory/defeat” overlays: BattleStartOverlay + WinnerOverlay announce phase (done).
 
 #### Stage 2.2 — Audio (Howler.js)
 
@@ -230,9 +239,12 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 
 #### Stage 2.3 — Assets and tuning
 
-- [ ] Add stadium image to `assets/images`; reference in battle layout.
+- [x] Add stadium image to `shared/assets/images/stadium.png`; reference in battle layout.
+- [x] Add lobby image `shared/assets/images/lobby.png`; reference in lobby screen.
+- [x] Add config/backend image `shared/assets/images/host-backend.png`; reference in config screen.
 - [ ] Add or link sound files (e.g. `assets/sounds/attack.mp3`, `battle.mp3`); document format and licensing if needed.
-- [ ] Tune animation duration and easing so feedback feels clear but not slow.
+- [x] Tune animation duration and easing (entrance ~0.25s, shake 0.35s, pulse 2s loop) so feedback feels clear but not slow.
+- [x] 8-bit theme and shared CSS: Press Start 2P font, `.pixel-art`, `.panel-card`, `.panel-overlay`, `.input-8bit`, `.btn-base`; lobby team single row with compact badges (TypeBadge xs).
 
 **Stage 2 exit criteria:** Same flow as Stage 1, with stadium background, smooth animations on hit/switch/end, and coherent music + SFX.
 

@@ -21,7 +21,7 @@ export function ReadySection({
         type="button"
         onClick={onReady}
         disabled={disabled || isMarkingReady || isReady}
-        className="w-full py-2 px-4 rounded-lg bg-amber-500 text-slate-900 font-medium hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-base w-full py-2 px-4 bg-amber-500 text-slate-900 font-medium hover:bg-amber-400"
       >
         {isMarkingReady ? 'Marking ready…' : 'Ready'}
       </button>

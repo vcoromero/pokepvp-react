@@ -28,7 +28,7 @@ export function ConfigScreen() {
         <div className="absolute inset-0 bg-slate-900/55" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md rounded-xl bg-slate-900/85 backdrop-blur-sm p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-md panel-overlay p-6">
         <div className="space-y-6">
           <ConfigHeader />
           <BackendUrlInput value={inputUrl} onChange={setInputUrl} />

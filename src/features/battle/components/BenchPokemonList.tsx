@@ -13,7 +13,7 @@ export function BenchPokemonList({
   title = 'Bench',
 }: BenchPokemonListProps) {
   return (
-    <div className="rounded-lg bg-slate-800/80 p-1.5 border border-slate-600 shrink-0">
+    <div className="panel-card-subtle p-1.5 shrink-0">
       <span className="text-xs text-slate-400 uppercase tracking-wide block mb-1.5">
         {title}
       </span>
@@ -33,7 +33,7 @@ export function BenchPokemonList({
               <img
                 src={p.sprite}
                 alt={p.name}
-                className="w-9 h-9 object-contain"
+                className="pixel-art w-9 h-9 object-contain"
               />
               <span className="text-xs text-white truncate max-w-full leading-tight">
                 {p.name}

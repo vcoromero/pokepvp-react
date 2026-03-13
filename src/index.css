@@ -1,17 +1,62 @@
 @import "tailwindcss";
 
+/* 8-bit / pixel style to match Pokémon sprites */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: "Press Start 2P", system-ui, cursive;
+  line-height: 1.6;
   font-weight: 400;
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  /* Slightly larger base: Press Start 2P is small at 16px */
+  font-size: 12px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    font-size: 14px;
+  }
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+}
+
+/* Keep pixel-art sprites sharp when scaled (no blur) */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Buttons: balanced size for 8-bit font (readable without overflowing) */
+.text-btn-8bit {
+  font-size: 0.8rem;
+}
+
+/* Shared layout/surface styles (DRY) */
+@layer components {
+  /* Dark slate panel for cards, status, modals */
+  .panel-card {
+    @apply rounded-lg bg-slate-800 border border-slate-600;
+  }
+  .panel-card-subtle {
+    @apply rounded-lg bg-slate-800/80 border border-slate-600;
+  }
+  /* Floating overlay for forms (config, lobby nickname) */
+  .panel-overlay {
+    @apply rounded-xl bg-slate-900/85 backdrop-blur-sm shadow-xl;
+  }
+  /* Text input: dark field + amber focus ring */
+  .input-8bit {
+    @apply w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-amber-500;
+  }
+  /* Common button base: 8-bit font size + shape + disabled (add color/hover in component) */
+  .btn-base {
+    font-size: 0.8rem;
+    @apply rounded-lg disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }

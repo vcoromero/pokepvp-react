@@ -19,7 +19,7 @@ export function ConfigActions({
         type="button"
         onClick={onTest}
         disabled={!canTest || isTesting}
-        className="flex-1 py-2 px-4 rounded-lg bg-slate-700 text-white font-medium hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-base flex-1 py-2 px-4 bg-slate-700 text-white font-medium hover:bg-slate-600"
       >
         {isTesting ? 'Testing…' : 'Test connection'}
       </button>
@@ -27,7 +27,7 @@ export function ConfigActions({
         type="button"
         onClick={onSave}
         disabled={!canSave}
-        className="flex-1 py-2 px-4 rounded-lg bg-amber-500 text-slate-900 font-medium hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-base flex-1 py-2 px-4 bg-amber-500 text-slate-900 font-medium hover:bg-amber-400"
       >
         Save &amp; go to Lobby
       </button>

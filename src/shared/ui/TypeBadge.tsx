@@ -36,8 +36,8 @@ const DEFAULT_STYLE = {
 
 interface TypeBadgeProps {
   type: string
-  /** 'sm' for bench/crowded UI, 'md' for cards (default) */
-  size?: 'sm' | 'md'
+  /** 'xs' for tight layouts (e.g. lobby team), 'sm' for bench, 'md' for cards (default) */
+  size?: 'xs' | 'sm' | 'md'
   className?: string
 }
 
@@ -46,13 +46,15 @@ export function TypeBadge({ type, size = 'md', className = '' }: TypeBadgeProps)
   const style = TYPE_STYLES[key] ?? DEFAULT_STYLE
 
   const sizeClasses =
-    size === 'sm'
-      ? 'px-2 py-0.5 text-[10px]'
-      : 'px-2.5 py-1 text-xs'
+    size === 'xs'
+      ? 'px-1.5 py-0.5 text-[8px] border'
+      : size === 'sm'
+        ? 'px-2 py-0.5 text-[10px] border-2'
+        : 'px-2.5 py-1 text-xs border-2'
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full font-bold uppercase tracking-wide whitespace-nowrap border-2 ${sizeClasses} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full font-bold uppercase tracking-wide whitespace-nowrap ${sizeClasses} ${className}`}
       style={{
         background: `linear-gradient(180deg, ${style.gradientStart} 0%, ${style.gradientEnd} 100%)`,
         borderColor: style.border,
@@ -66,15 +68,16 @@ export function TypeBadge({ type, size = 'md', className = '' }: TypeBadgeProps)
 
 interface TypeBadgesProps {
   types: string[]
-  size?: 'sm' | 'md'
+  size?: 'xs' | 'sm' | 'md'
   className?: string
 }
 
 /** Renders a row of type badges for a Pokémon. */
 export function TypeBadges({ types, size = 'md', className = '' }: TypeBadgesProps) {
   if (types.length === 0) return null
+  const gapClass = size === 'xs' ? 'gap-1' : 'gap-1.5'
   return (
-    <div className={`flex flex-wrap gap-1.5 ${className}`}>
+    <div className={`flex flex-wrap ${gapClass} ${className}`}>
       {types.map((t) => (
         <TypeBadge key={t} type={t} size={size} />
       ))}
