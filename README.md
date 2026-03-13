@@ -7,9 +7,9 @@
 
 <br />
 
-> **Playable and deployed.** The game is live and ready to play. The core flow matches the defined business rules and you can already battle end‑to‑end; further UI/UX polish and visual improvements are planned for future iterations.
+**Playable and deployed.** PokePVP is already live on Netlify and instantly accessible at the public URL below. The core end‑to‑end battle flow is production‑ready and follows the defined business rules; upcoming iterations will focus on richer visuals, smoother animations, and overall UX polish.
 
-Frontend client for **PokePVP**: a lightweight real-time PvP game where two players pick a team of 3 Pokémon from a catalog, join a lobby, and battle turn by turn until one player wins.
+This repository contains the frontend client for **PokePVP**: a lightweight real-time PvP experience where two players each assemble a team of 3 Pokémon from a shared catalog, join a lobby, and battle turn by turn until one trainer emerges victorious.
 
 ## Live demo
 
@@ -17,7 +17,7 @@ You can start playing directly here:
 
 - **PokePVP (Netlify):** https://pokepvp-lite.netlify.app
 
-No local setup required: open the link, add https://pokepvp.onrender.com as backend service, choose a nickname, wait for a second player (or open another browser/tab), and start battling.
+No local setup is required for the frontend: open the Netlify URL, configure `https://pokepvp.onrender.com` as the backend service, and use the **Test connection** button the first time. Because the backend on Render may be in a dormant state after periods of inactivity, it is recommended to press **Test connection** once to wake the service; once it reports **Connection OK**, you can select a nickname, wait for a second player (or open another browser/tab), and start battling normally.
 
 ## Overview
 
