@@ -21,7 +21,7 @@ export default defineConfig([
     },
     rules: {},
   },
-  // shared/ must not import from features/
+  // shared/ must not import from features/ or infrastructure/application
   {
     files: ['src/shared/**/*.{ts,tsx}'],
     rules: {
@@ -30,8 +30,9 @@ export default defineConfig([
         {
           patterns: [
             {
-              group: ['@/features*'],
-              message: 'shared/ must not import from features/ (layering).',
+              group: ['@/features*', '@/infrastructure*', '@/application*'],
+              message:
+                'shared/ must not import from features/, infrastructure/, or application/ (layering).',
             },
           ],
         },
