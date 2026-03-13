@@ -58,6 +58,16 @@ export function BattleScreen() {
       ? damageText
       : null
 
+  // Unique key per hit so the defender's card runs the shake animation once per turn
+  const myShakeKey =
+    damageOnMySide && lastTurnResult
+      ? `hit-${lastTurnResult.battleId}-${lastTurnResult.defender.pokemonId}-${lastTurnResult.attacker?.playerId ?? ''}`
+      : undefined
+  const opponentShakeKey =
+    damageOnOpponentSide && lastTurnResult
+      ? `hit-${lastTurnResult.battleId}-${lastTurnResult.defender.pokemonId}-${lastTurnResult.attacker?.playerId ?? ''}`
+      : undefined
+
   const canSurrender = !isFinished
 
   const myLabel = player?.nickname ? `You (${player.nickname})` : 'You'
@@ -140,6 +150,7 @@ export function BattleScreen() {
           label={opponentLabel}
           damageText={damageOnOpponentSide}
           isActiveFainted={isOpponentActiveFainted}
+          shakeKey={opponentShakeKey}
         />
 
         <TurnIndicator
@@ -156,6 +167,7 @@ export function BattleScreen() {
           label={myLabel}
           damageText={damageOnMySide}
           isActiveFainted={isMyActiveFainted}
+          shakeKey={myShakeKey}
         />
       </div>
 

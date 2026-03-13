@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { PokemonState } from '@/shared/types'
 
 interface BenchPokemonListProps {
@@ -17,11 +18,14 @@ export function BenchPokemonList({
         {title}
       </span>
       <div className="flex flex-row flex-wrap gap-1.5 sm:flex-col sm:gap-1.5">
-        {pokemonList.map((p) => {
+        {pokemonList.map((p, index) => {
           const maxHp = maxHpByStateId[p.id] ?? p.currentHp
           return (
-            <div
+            <motion.div
               key={p.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05, duration: 0.2 }}
               className={`flex flex-col items-center rounded p-1.5 min-w-[70px] ${
                 p.defeated ? 'opacity-50 bg-slate-700' : 'bg-slate-700/80'
               }`}
@@ -47,7 +51,7 @@ export function BenchPokemonList({
               {p.defeated && (
                 <span className="text-xs text-red-400">Fainted</span>
               )}
-            </div>
+            </motion.div>
           )
         })}
       </div>
