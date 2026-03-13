@@ -8,6 +8,13 @@ This document verifies that the lobby-connection changes (URL normalization, sin
 - **Application** (services, ports) does not depend on features or infrastructure; it depends only on ports and shared/domain.
 - **Infrastructure** implements ports (adapters); it may depend on application ports and shared.
 - **Features** do not import infrastructure directly; they use application services or shared (enforced by ESLint).
+- **Shared** does not import from features, application, or infrastructure. It only provides cross-cutting concerns (types, store slices, utils, audio, UI, schemas, errors, api facades).
+
+The **only composition root** for realtime and store wiring is `app/services-context.tsx`, which:
+
+- Creates the concrete adapters (`SocketIoRealtimeGateway`, `ZustandConnectionStore`, `ZustandSessionStore`, `ZustandBattleRepository`, `HttpHealthClient`).
+- Instantiates application services (`ConnectionService`, `LobbyService`, `BattleService`).
+- Exposes them to features/shared hooks via React context (`useConnectionService`, `useLobbyService`, `useBattleService`).
 
 All recent changes respect these boundaries.
 

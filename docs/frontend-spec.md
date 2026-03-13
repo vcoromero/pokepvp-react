@@ -11,6 +11,8 @@ This document defines the architecture, stack, and implementation stages for the
 - **Stage 1.3 — Done.** Lobby UI: nickname input, Join, lobby state (players/ready count), Get team, 3 Pokémon (sprite from CDN + id), Ready, “Waiting for opponent”; on `battle_start` redirect to `/battle`.
 - **Stage 1.4 — Done.** Battle screen: two sides (you vs opponent), active Pokémon (sprite, name, HP bar), bench list, Attack button (when `isMyTurn`), turn indicator, damage text from `turn_result`, winner overlay and Play again. Component-based: BattleScreen, BattleLayout, BattleSide, ActivePokemonCard, BenchPokemonList, AttackButton, TurnIndicator, WinnerOverlay; shared HpBar; useBattleFlow.
 - **Stage 1.5 — Done.** Socket error and disconnect handling: `ConnectionBanner` in shared UI shows `lastError`, socket status, and "Change backend URL" link when disconnected; used on lobby and battle. Buttons already have loading/disabled states (Join, Get team, Ready, Attack).
+- **Stage 2.2 — Done.** `shared/audio`: Howler.js with music tracks (lobby.mp3 for config + lobby, battle.mp3, victory.mp3, defeat.mp3) and SFX (attack.mp3, faint.mp3). `useAudioSync` in app layout: lobby music on config/lobby; battle music on battle; victory/defeat on `battle_end`; attack SFX on each `turn_result`, faint SFX when defender defeated. Music only re-runs on pathname/winnerId change (no restart on Join, Attack, etc.). Mute in config screen (persisted in localStorage).
+- **Stage 2.1 — Done.** Full-screen background images: stadium in battle (`BattleLayout`), lobby in lobby screen (`LobbyScreen`), host/backend in config screen (`ConfigScreen`); assets in `shared/assets/images/` (stadium.png, lobby.png, host-backend.png) with dark overlay. Framer Motion: entrance animations for battle sides and Pokémon cards, stagger on bench; hit-shake on defender when damage is applied; transitions on AttackButton, TurnIndicator, WinnerOverlay, BenchPokemonList. Shared UI: `TypeBadge` / `TypeBadges` (oval gradient, white text, 18 types; sizes xs/sm/md) in ActivePokemonCard and lobby TeamGrid; `PulseGlowText` (pulse + glow, no box) for turn indicator and "Waiting for opponent to be ready…". Readability: semi-transparent panels for config form and lobby nickname form; "Joined as" pill on lobby; battle bottom bar with backdrop blur. Optional overlays: BattleStartOverlay (short "Battle start!" then fade out); WinnerOverlay with short "Victory!" / "Defeat!" phase then result + Play again. **8-bit theme:** Press Start 2P font (Google Fonts), `.pixel-art` for sharp sprites, `.btn-base` / `.text-btn-8bit` for button text size; **shared CSS** in `src/index.css` (`@layer components`): `.panel-card`, `.panel-card-subtle`, `.panel-overlay`, `.input-8bit`, `.btn-base` to avoid repeating class strings. Lobby team: three cards in a single row (flex-nowrap, overflow-x-auto), compact type badges (size xs), sprite w-16 h-16.
 
 ---
 
@@ -28,7 +30,7 @@ This document defines the architecture, stack, and implementation stages for the
 |--------|--------|--------|
 | Framework | React 18+ | With TypeScript strict mode |
 | Build | Vite | Fast dev and small bundles |
-| Styling | Tailwind CSS | Utility-first; no heavy UI library |
+| Styling | Tailwind CSS | Utility-first; shared component classes in `src/index.css` (§3.4); 8-bit font (Press Start 2P) |
 | Global state | Zustand | Lightweight; one store split by domain (connection, session, battle) |
 | Real-time | Socket.IO client | Same events as backend (see business-rules §7) |
 | Animations | Framer Motion | Stage 2: battle FX, transitions |
@@ -39,61 +41,105 @@ This document defines the architecture, stack, and implementation stages for the
 
 ## 3. Frontend Architecture
 
-We use a **feature-first** layout with clear **layers** so the app stays scalable and maintainable.
+We use a **feature-first** layout with **hexagonal (ports & adapters)** and clear **layers** so the app stays scalable and maintainable. See [architecture-alignment.md](architecture-alignment.md) for dependency rules and how connection/store/realtime align with Clean Code, SOLID, and Hexagonal.
 
 ### 3.1 Folder Structure
 
 ```
 src/
-  app/                    # App shell, router, global providers
+  app/                         # App shell, router, global providers, composition root
     App.tsx
     router.tsx
     providers.tsx
-  config/                 # Env, constants, backend URL
-    env.ts
-    constants.ts
-  features/               # Feature modules (one folder per flow)
-    config/               # Backend URL setup & health check
+    services-context.tsx       # Injects application services (Connection, Lobby, Battle) into tree
+  application/                 # Application layer: services + ports (abstractions)
+    ports/                     # Ports (interfaces): RealtimeGateway, ConnectionStore, SessionStore,
+      RealtimeGateway.ts       #   BattleRepository, HealthClient
+      ConnectionStore.ts
+      SessionStore.ts
+      BattleRepository.ts
+      HealthClient.ts
+    ConnectionService.ts        # Orchestrates connect/reconnect, syncStatusFromRealtime
+    LobbyService.ts
+    BattleService.ts
+    __mocks__/                  # Test doubles for ports
+  domain/                      # Domain logic (no framework/infra; pure)
+    lobby.ts
+    battle.ts
+    battle.test.ts
+  features/                    # Feature modules (one folder per flow); UI + feature hooks
+    config/                    # Backend URL setup & health check
       components/
       hooks/
-      api/
-    lobby/                # Join, assign team, ready
+    lobby/                     # Join, assign team, ready
       components/
       hooks/
-    battle/               # Battle screen, turn, attack
+    battle/                    # Battle screen, turn, attack
       components/
       hooks/
-  shared/                 # Shared across features
-    api/                  # Socket client, REST helpers
+  infrastructure/              # Adapters: implement application ports
+    realtime/
+      SocketIoRealtimeGateway.ts
+    store/                     # Zustand adapters for Connection, Session, Battle ports
+      ZustandConnectionStore.ts
+      ZustandSessionStore.ts
+      ZustandBattleRepository.ts
+    http/
+      HttpHealthClient.ts
+  shared/                      # Shared across all layers (no dependency on features)
+    api/                       # Facade over infrastructure: socket.ts (gateway + store sync), http.ts
       socket.ts
+      socket-client.ts
       http.ts
-    store/                # Zustand slices
+    audio/                     # Howler.js music + SFX (Stage 2.2)
+      tracks.ts
+      player.ts
+      useAudioSync.ts
+      index.ts
+    store/                     # Zustand slices (used by infrastructure adapters)
       connection.ts
       session.ts
       battle.ts
       index.ts
-    ui/                   # Reusable UI (buttons, cards, HpBar, etc.)
-    types/                # TS types (Player, Lobby, Battle, events)
-    hooks/                # useBackendUrl, useSocket, etc.
+      types.ts
+    ui/                        # Reusable UI (HpBar, TypeBadge, PulseGlowText, ConnectionBanner, etc.)
+    types/                     # TS types (Player, Lobby, Battle, events, catalog, error)
+    hooks/                     # useBackendUrl, useAutoConnect (uses app services-context)
     utils/
-  assets/                 # Images, sounds (Stage 2)
-    images/
-    sounds/
+    constants.ts
+    errors/
+    schemas/                   # Zod schemas for socket event payloads
+    assets/
+      images/                  # stadium.png, lobby.png, host-backend.png
+      sounds/                  # lobby.mp3, battle.mp3, victory.mp3, defeat.mp3, attack.mp3, faint.mp3
+  main.tsx
+  index.css
 ```
 
-### 3.2 Layering Rules
+### 3.2 Layering Rules (see [architecture-alignment.md](architecture-alignment.md))
 
-- **`shared/`** must not import from **`features/`**. Features can use shared (store, api, ui, types).
-- **`features/`** own their screens and feature-specific hooks; they call **`shared/api`** (Socket, HTTP) and **`shared/store`**.
-- **State flow:** Socket events → update Zustand store → components read from store (and optional local UI state).
-- **Side effects (audio, analytics):** Triggered from store subscriptions or from feature components that react to store changes (e.g. when `turn_result` is set, play SFX).
+- **Domain** does not depend on application, infrastructure, or features (enforced by ESLint).
+- **Application** (services, ports) depends only on ports and shared/domain; it does not import features or infrastructure.
+- **Infrastructure** implements ports (adapters); it may depend on application ports and shared.
+- **Features** do not import infrastructure directly; they use application services (via app context) or shared. They own screens and feature-specific hooks.
+- **Shared** must not import from features. It provides store slices, api facade, ui, types, utils, constants, audio.
+- **State flow:** Socket events → gateway/store adapters → Zustand store → React components. Side effects (audio) are triggered from store/route (e.g. `useAudioSync` on pathname/winnerId; SFX on `turn_result`).
 
 ### 3.3 Data Flow (High Level)
 
 ```
-Backend (Socket.IO)  →  socket.ts (listeners)  →  Zustand store  →  React components
-User actions         →  socket.emit(...)       →  (ack / server events)  →  store updates
+Backend (Socket.IO)  →  SocketIoRealtimeGateway (infra)  →  shared/api/socket.ts (facade)
+                                                         →  Zustand store (via port adapters)  →  React components
+User actions         →  socket.emit(...) / services       →  (ack / server events)  →  store updates
 ```
+
+### 3.4 Styling and theme (8-bit)
+
+- **Font:** "Press Start 2P" (Google Fonts) applied globally; base font-size 12px (mobile) / 14px (sm+).
+- **Sprites:** Class `.pixel-art` (in `src/index.css`) keeps scaled sprites sharp (`image-rendering: pixelated`); used on all Pokémon sprite `<img>`s.
+- **Buttons:** `.btn-base` for common button styling (font-size 0.8rem, rounded-lg, disabled states); components add color/hover. `.text-btn-8bit` available for non-button text when needed.
+- **Shared component classes** (`@layer components` in `src/index.css`): `.panel-card` (dark slate panel), `.panel-card-subtle` (slate/80), `.panel-overlay` (floating form container with backdrop-blur), `.input-8bit` (dark input + amber focus ring). Use these instead of repeating long Tailwind strings.
+- **TypeBadge:** Sizes `xs` (lobby team), `sm` (bench), `md` (battle cards). Lobby team cards use single row, compact badges, sprite 16×16 (Tailwind w-16 h-16).
 
 ---
 
@@ -215,24 +261,27 @@ Server stores `playerId` and `lobbyId` on the socket; client must not send them 
 
 **Objective:** Add stadium background, Framer Motion animations, and Howler.js music/SFX without changing game logic.
 
-#### Stage 2.1 — Visual
+#### Stage 2.1 — Visual ✅ Done
 
-- [ ] Battle screen: background image (stadium) full-screen; position sprites and HP bars on top.
-- [ ] Framer Motion: entrance for Pokémon when battle starts and when next Pokémon enters; “hit” shake on defender when damage is applied; subtle transitions for buttons and panels.
-- [ ] Optional: short “battle start” and “victory/defeat” overlays.
+- [x] Battle screen: background image (stadium) full-screen; position sprites and HP bars on top.
+- [x] Lobby screen: full-screen background (lobby.png); nickname form in panel; "Joined as" pill. Config screen: full-screen background (host-backend.png); form in panel. Framer Motion: entrance for battle sides (stagger) and ActivePokemonCard; hit-shake on defender; transitions on AttackButton, TurnIndicator, WinnerOverlay, BenchPokemonList. TypeBadge/TypeBadges (oval, white text, 18 types). PulseGlowText for turn and "Waiting for opponent to be ready…". See Implementation status above for full list.
+- [x] Optional: short “battle start” and “victory/defeat” overlays: BattleStartOverlay + WinnerOverlay announce phase (done).
 
 #### Stage 2.2 — Audio (Howler.js)
 
-- [ ] `shared/audio` (or `features/battle/audio`): init Howler; define music tracks (lobby, battle, victory/defeat) and SFX (attack, faint, etc.).
-- [ ] Play lobby music when in lobby screen; switch to battle music on `battle_start`; play victory/defeat on `battle_end`.
-- [ ] On each `turn_result`: play attack SFX; if defender defeated, play faint SFX.
-- [ ] Optional: volume controls or mute in config/settings.
+- [x] `shared/audio`: init Howler; music tracks (lobby for config + lobby, battle, victory, defeat) and SFX (attack, faint). Music does not restart on store updates (effect deps: pathname, winnerId only).
+- [x] Play lobby music when in lobby/config screen; switch to battle music on battle screen; play victory/defeat on `battle_end`.
+- [x] On each `turn_result`: play attack SFX; if defender defeated, play faint SFX.
+- [x] Optional: mute in config screen (persisted in localStorage).
 
 #### Stage 2.3 — Assets and tuning
 
-- [ ] Add stadium image to `assets/images`; reference in battle layout.
-- [ ] Add or link sound files (e.g. `assets/sounds/attack.mp3`, `battle.mp3`); document format and licensing if needed.
-- [ ] Tune animation duration and easing so feedback feels clear but not slow.
+- [x] Add stadium image to `shared/assets/images/stadium.png`; reference in battle layout.
+- [x] Add lobby image `shared/assets/images/lobby.png`; reference in lobby screen.
+- [x] Add config/backend image `shared/assets/images/host-backend.png`; reference in config screen.
+- [x] Sound files in `shared/assets/sounds/`: lobby.mp3, battle.mp3, victory.mp3, defeat.mp3, attack.mp3, faint.mp3.
+- [x] Tune animation duration and easing (entrance ~0.25s, shake 0.35s, pulse 2s loop) so feedback feels clear but not slow.
+- [x] 8-bit theme and shared CSS: Press Start 2P font, `.pixel-art`, `.panel-card`, `.panel-overlay`, `.input-8bit`, `.btn-base`; lobby team single row with compact badges (TypeBadge xs).
 
 **Stage 2 exit criteria:** Same flow as Stage 1, with stadium background, smooth animations on hit/switch/end, and coherent music + SFX.
 

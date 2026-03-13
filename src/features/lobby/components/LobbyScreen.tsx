@@ -6,6 +6,8 @@ import { NicknameForm } from "./NicknameForm";
 import { LobbyStatusCard } from "./LobbyStatusCard";
 import { TeamGrid } from "./TeamGrid";
 import { ReadySection } from "./ReadySection";
+import lobbyImage from '@/shared/assets/images/lobby.png'
+import { BackgroundImage } from '@/shared/ui/BackgroundImage'
 
 export function LobbyScreen() {
   const {
@@ -36,7 +38,12 @@ export function LobbyScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-4 flex flex-col items-center">
+    <div className="min-h-screen text-white flex flex-col items-center relative">
+      <div className="absolute inset-0 z-0">
+        <BackgroundImage src={lobbyImage} />
+      </div>
+
+      <div className="relative z-10 w-full min-h-screen p-4 flex flex-col items-center">
       <LobbyHeader />
       <LobbyAlerts
         socketStatus={socketStatus}
@@ -46,18 +53,20 @@ export function LobbyScreen() {
       />
 
       {!player ? (
-        <NicknameForm
-          value={nickname}
-          onChange={setNickname}
-          onSubmit={join}
-          isSubmitting={isJoining}
-          disabled={!isConnected}
-        />
+        <div className="w-full max-w-sm panel-overlay p-6">
+          <NicknameForm
+            value={nickname}
+            onChange={setNickname}
+            onSubmit={join}
+            isSubmitting={isJoining}
+            disabled={!isConnected}
+          />
+        </div>
       ) : (
         <div className="w-full max-w-lg space-y-6">
-          <p className="text-slate-400">
-            Joined as <strong className="text-white">{player.nickname}</strong>
-            <span className="ml-2 text-slate-500 text-xs">
+          <p className="inline-block px-3 py-1.5 rounded-lg bg-slate-900/75 text-white text-sm drop-shadow-sm">
+            Joined as <strong>{player.nickname}</strong>
+            <span className="ml-2 text-slate-300 text-xs">
               (ID: …{player.id.slice(-6)})
             </span>
           </p>
@@ -69,7 +78,7 @@ export function LobbyScreen() {
               type="button"
               onClick={getTeam}
               disabled={isGettingTeam || !isConnected}
-              className="w-full py-2 px-4 rounded-lg bg-slate-600 text-white font-medium hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-base w-full py-2 px-4 bg-slate-600 text-white font-medium hover:bg-slate-500"
             >
               {isGettingTeam ? "Getting team…" : "Get team"}
             </button>
@@ -87,6 +96,7 @@ export function LobbyScreen() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
 import { useConnectionService } from '@/app/services-context'
@@ -9,12 +9,14 @@ import { BattleSide } from './BattleSide'
 import { AttackButton } from './AttackButton'
 import { TurnIndicator } from './TurnIndicator'
 import { WinnerOverlay } from './WinnerOverlay'
+import { BattleStartOverlay } from './BattleStartOverlay'
 
 export function BattleScreen() {
   const navigate = useNavigate()
   const socketStatus = useAppStore((s) => s.socketStatus)
   const lastError = useAppStore((s) => s.lastError)
   const {
+    battle,
     displayMyActive,
     displayOpponentActive,
     isMyActiveFainted,
@@ -41,6 +43,14 @@ export function BattleScreen() {
   } = useBattleFlow()
 
   const [isSurrenderModalOpen, setIsSurrenderModalOpen] = useState(false)
+  const [battleStartDismissedForBattleId, setBattleStartDismissedForBattleId] =
+    useState<string | null>(null)
+
+  const showBattleStartOverlay =
+    battle != null && battle.id !== battleStartDismissedForBattleId
+  const dismissBattleStart = useCallback(() => {
+    if (battle?.id) setBattleStartDismissedForBattleId(battle.id)
+  }, [battle?.id])
 
   const myBench = myPokemonOrder.filter((p) => p.id !== displayMyActive?.id)
   const opponentBench = opponentPokemonOrder.filter((p) => p.id !== displayOpponentActive?.id)
@@ -57,6 +67,16 @@ export function BattleScreen() {
     lastTurnResult?.defender.pokemonId === displayOpponentActive?.pokemonId
       ? damageText
       : null
+
+  // Unique key per hit so the defender's card runs the shake animation once per turn
+  const myShakeKey =
+    damageOnMySide && lastTurnResult
+      ? `hit-${lastTurnResult.battleId}-${lastTurnResult.defender.pokemonId}-${lastTurnResult.attacker?.playerId ?? ''}`
+      : undefined
+  const opponentShakeKey =
+    damageOnOpponentSide && lastTurnResult
+      ? `hit-${lastTurnResult.battleId}-${lastTurnResult.defender.pokemonId}-${lastTurnResult.attacker?.playerId ?? ''}`
+      : undefined
 
   const canSurrender = !isFinished
 
@@ -88,7 +108,7 @@ export function BattleScreen() {
                 type="button"
                 onClick={() => setIsSurrenderModalOpen(true)}
                 disabled={isSurrendering}
-                className="py-2.5 px-4 rounded-lg border border-slate-500 text-slate-200 text-sm sm:text-base hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="btn-base py-2.5 px-4 rounded-lg border border-slate-500 text-slate-200 hover:bg-slate-800 transition-colors"
               >
                 {isSurrendering ? 'Surrendering…' : 'Surrender'}
               </button>
@@ -140,6 +160,7 @@ export function BattleScreen() {
           label={opponentLabel}
           damageText={damageOnOpponentSide}
           isActiveFainted={isOpponentActiveFainted}
+          shakeKey={opponentShakeKey}
         />
 
         <TurnIndicator
@@ -156,8 +177,15 @@ export function BattleScreen() {
           label={myLabel}
           damageText={damageOnMySide}
           isActiveFainted={isMyActiveFainted}
+          shakeKey={myShakeKey}
         />
       </div>
+
+      <BattleStartOverlay
+        visible={showBattleStartOverlay}
+        overlayKey={battle?.id ?? 'none'}
+        onDismiss={dismissBattleStart}
+      />
 
       {isFinished && (
         <WinnerOverlay isWinner={!!isWinner} onPlayAgain={playAgain} />
@@ -165,7 +193,7 @@ export function BattleScreen() {
 
       {isSurrenderModalOpen && canSurrender && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 px-4">
-          <div className="w-full max-w-sm rounded-lg bg-slate-800 border border-slate-600 p-4 space-y-3">
+          <div className="w-full max-w-sm panel-card p-4 space-y-3">
             <h2 className="text-lg font-semibold">Surrender battle?</h2>
             <p className="text-sm text-slate-300">
               If you surrender, your opponent will win this battle immediately.
@@ -176,7 +204,7 @@ export function BattleScreen() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                className="px-3 py-2 text-sm rounded border border-slate-500 text-slate-200 hover:bg-slate-700"
+                className="btn-base px-3 py-2 rounded border border-slate-500 text-slate-200 hover:bg-slate-700"
                 onClick={() => setIsSurrenderModalOpen(false)}
                 disabled={isSurrendering}
               >
@@ -184,7 +212,7 @@ export function BattleScreen() {
               </button>
               <button
                 type="button"
-                className="px-3 py-2 text-sm rounded bg-red-600 text-white font-semibold hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-base px-3 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-500"
                 onClick={() => {
                   surrender()
                   setIsSurrenderModalOpen(false)

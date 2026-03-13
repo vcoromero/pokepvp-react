@@ -23,9 +23,10 @@ No local setup required: open the link, choose a nickname, wait for a second pla
 
 This is the browser client that connects to the PokePVP backend via Socket.IO and REST (health check). It handles:
 
-- **Backend config** — set and persist backend base URL (local or deployed). **Test connection** button calls `GET /health` and shows "Connection OK" or failure.
-- **Lobby & team selection** — enter a nickname, get assigned 3 random Pokémon, and confirm ready (Stage 1.3).
-- **Real-time battle** — turn-based combat driven by Socket.IO events (Stage 1.4), including a **Surrender** action to concede very long battles.
+- **Backend config** — set and persist backend base URL (local or deployed). **Test connection** button calls `GET /health` and shows "Connection OK" or failure. **Mute music** option (persisted in localStorage).
+- **Lobby & team selection** — enter a nickname, get assigned 3 random Pokémon, and confirm ready.
+- **Real-time battle** — turn-based combat driven by Socket.IO events, including a **Surrender** action to concede.
+- **Audio (Howler.js)** — lobby/config and battle music, victory/defeat jingles, attack and faint SFX; music does not restart on button presses.
 
 ## Run
 
@@ -50,7 +51,7 @@ When running both the frontend and the backend on your machine:
 
 ## 📚 Documentation
 
-- **[docs/frontend-spec.md](docs/frontend-spec.md)** — Frontend architecture, stack, Zustand store, Socket.IO integration, and implementation stages (Stage 1: functional MVP; Stage 2: effects and audio).
+- **[docs/frontend-spec.md](docs/frontend-spec.md)** — Frontend architecture, stack, Zustand store, Socket.IO integration, and implementation stages (Stage 1: functional MVP; Stage 2: visuals and audio, including `shared/audio` with Howler.js).
 - **[docs/business-rules.md](docs/business-rules.md)** — Canonical business rules: catalog, team selection, lobby states, battle flow, damage formula, and events. Shared with the backend.
 - **[docs/backend-data-contracts.md](docs/backend-data-contracts.md)** — MongoDB schemas, domain shapes (what the backend returns), Socket.IO event payloads and ack returns. Use this to define TypeScript types.
 
