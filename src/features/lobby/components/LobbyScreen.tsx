@@ -1,5 +1,5 @@
 import { useLobbyFlow } from '../hooks/useLobbyFlow'
-import { useConnectionService } from '@/app/services-context'
+import { useConnectionService } from '@/app/services-hooks'
 import { LobbyHeader } from './LobbyHeader'
 import { LobbyAlerts } from "./LobbyAlerts";
 import { NicknameForm } from "./NicknameForm";

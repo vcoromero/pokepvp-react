@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
-import { useConnectionService } from '@/app/services-context'
+import { useConnectionService } from '@/app/services-hooks'
 import { ConnectionBanner } from '@/shared/ui'
 import { useBattleFlow } from '../hooks/useBattleFlow'
 import { BattleLayout } from './BattleLayout'

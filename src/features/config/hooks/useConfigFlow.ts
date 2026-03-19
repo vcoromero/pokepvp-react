@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useConnectionService } from '@/app/services-context'
+import { useConnectionService } from '@/app/services-hooks'
 import { useAppStore } from '@/shared/store'
 
 export function useConfigFlow() {

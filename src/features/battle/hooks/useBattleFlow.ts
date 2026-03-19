@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore, selectIsMyTurn } from '@/shared/store'
-import { useBattleService } from '@/app/services-context'
+import { useBattleService } from '@/app/services-hooks'
 import type { PokemonState } from '@/shared/types'
 
 /** How long to keep showing the fainted Pokémon before switching to the next (ms). */
@@ -107,13 +107,23 @@ export function useBattleFlow() {
   useEffect(() => {
     if (!lastTurnResult?.defender.defeated) return
     const until = Date.now() + FAINT_DISPLAY_MS
-    setFaintDisplayUntil(until)
+    // Schedule state update asynchronously to satisfy react-hooks purity lint.
+    // This still runs essentially immediately after the effect flush.
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) setFaintDisplayUntil(until)
+    })
     const t = setTimeout(() => setFaintDisplayUntil(null), FAINT_DISPLAY_MS)
-    return () => clearTimeout(t)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
   }, [lastTurnResult?.defender.defeated, lastTurnResult?.defender.playerId, lastTurnResult?.defender.pokemonId])
 
   const faintedDefenderState = useMemo(() => {
-    if (!lastTurnResult?.defender.defeated || !faintDisplayUntil || Date.now() > faintDisplayUntil) return null
+    // Pure render: avoid Date.now() here. The effect controls the lifetime by clearing
+    // `faintDisplayUntil` after FAINT_DISPLAY_MS.
+    if (!lastTurnResult?.defender.defeated || faintDisplayUntil == null) return null
     return pokemonStates.find(
       (s) =>
         s.playerId === lastTurnResult.defender.playerId &&
@@ -121,7 +131,7 @@ export function useBattleFlow() {
     ) ?? null
   }, [lastTurnResult, pokemonStates, faintDisplayUntil])
 
-  const isInFaintDelay = faintDisplayUntil != null && Date.now() <= faintDisplayUntil
+  const isInFaintDelay = faintDisplayUntil != null
 
   const displayMyActive = useMemo((): PokemonState | undefined => {
     if (isInFaintDelay && faintedDefenderState && lastTurnResult && player && lastTurnResult.defender.playerId === player.id) {

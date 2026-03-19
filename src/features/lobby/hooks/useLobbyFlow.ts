@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/shared/store'
-import { useLobbyService } from '@/app/services-context'
+import { useLobbyService } from '@/app/services-hooks'
 import { areBothReady, getPlayerCount, getReadyCount, isPlayerReady } from '@/domain/lobby'
 import type { AssignPokemonDetail } from '@/shared/types/catalog'
 
