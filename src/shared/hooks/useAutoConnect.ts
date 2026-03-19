@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAppStore } from '@/shared/store'
-import { useConnectionService } from '@/app/services-context'
+import { useConnectionService } from '@/app/services-hooks'
 
 /**
  * Call from lobby or battle screens: connect to backend when backendBaseUrl is set
