@@ -51,9 +51,13 @@ When running both the frontend and the backend on your machine:
 
 ## 📚 Documentation
 
-- **[docs/frontend-spec.md](docs/frontend-spec.md)** — Frontend architecture, stack, Zustand store, Socket.IO integration, and implementation stages (Stage 1: functional MVP; Stage 2: visuals and audio, including `shared/audio` with Howler.js).
-- **[docs/business-rules.md](docs/business-rules.md)** — Canonical business rules: catalog, team selection, lobby states, battle flow, damage formula, and events. Shared with the backend.
-- **[docs/backend-data-contracts.md](docs/backend-data-contracts.md)** — MongoDB schemas, domain shapes (what the backend returns), Socket.IO event payloads and ack returns. Use this to define TypeScript types.
+Long-form specifications are maintained in the **Obsidian vault** (source of truth). Path on this machine (clone next to the repo):
+
+`/home/victorr/Documents/dev/dev-notes/Projects/PokePVP Front/`
+
+Start from **`00 - PokePVP Front project.md`** in that folder for an index (business rules, frontend spec, backend data contracts, architecture alignment, interview notes).
+
+The files under **`docs/`** in this repository are **short stubs** only: they point to the vault paths above and summarize each document. Use the vault when editing canonical content; update stubs only if paths or entry points change.
 
 ---
 
